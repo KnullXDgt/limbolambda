@@ -1,0 +1,1711 @@
+local LUCIDE = {
+    ["tractor"] = {16898788908,256,256,0,514},
+    ["egg"] = {117851493400222,0,0,0,0},
+    ["play"] = {135609604299893,0,0,0,0},
+    ["flame"] = {10723376114,0,0,0,0},
+    ["webhook"] = {16898613869,48,48,967,196},
+    ["workflow"] = {99186544029189,0,0,0,0},
+    ["arrow-up"] = {89282378235317,0,0,0,0},
+    ["chart-no-axes-column-increasing"] = {140383830943049,0,0,0,0},
+    ["gauge"] = {110273524101447,0,0,0,0},
+    ["settings-2"] = {135684703553372,0,0,0,0},
+    ["funnel"] = {108829540827529,0,0,0,0},
+    ["bug"] = {83626408925438,0,0,0,0},
+    ["smartphone"] = {96623008834511,0,0,0,0},
+    ["database"] = {126791525623846,0,0,0,0},
+    ["search"] = {121018724060431,0,0,0,0},
+    ["minus"] = {118026365011536,0,0,0,0},
+    ["keyboard"] = {121474456068237,0,0,0,0},
+    ["chevron-down"] = {134243273101015,0,0,0,0},
+    ["arrow-up-right"] = {129280608535523,0,0,0,0},
+    ["refresh-cw"] = {138133190015277,0,0,0,0},
+    ["package"] = {97261141732706,0,0,0,0},
+    ["house"] = {98755624629571,0,0,0,0},
+    ["zap"] = {130551565616516,0,0,0,0},
+    ["check"] = {93898873302694,0,0,0,0},
+    ["sliders-horizontal"] = {85538382643347,0,0,0,0},
+    ["panel-left-close"] = {126579818823552,0,0,0,0},
+    ["panel-right-close"] = {139528655524132,0,0,0,0},
+    ["move-down-right"] = {101479760041877,0,0,0,0},
+    ["plus"] = {111774323017047,0,0,0,0},
+    ["move"] = {116138709011735,0,0,0,0},
+    ["info"] = {124560466474914,0,0,0,0},
+    ["copy"] = {78979572434545,0,0,0,0},
+    ["gamepad-2"] = {92483947987410,0,0,0,0},
+    ["settings"] = {80758916183665,0,0,0,0},
+    ["map-pin"] = {75227242981157,0,0,0,0},
+    ["star"] = {104452870808420,0,0,0,0},
+    ["shopping-cart"] = {100986954300611,0,0,0,0},
+    ["store"] = {80897806363036,0,0,0,0},
+    ["banknote"] = {107997424163412,0,0,0,0},
+    ["scroll-text"] = {139017006975423,0,0,0,0},
+    ["toolbox"] = {139005338718012,0,0,0,0},
+}
+local Players=game:GetService("Players")
+local Input=game:GetService("UserInputService")
+local RunService=game:GetService("RunService")
+local TextService=game:GetService("TextService")
+local Limbo={Version="1.5.0",SupportsFractionalSliders=true,SupportsGameIconFallback=true,SupportsAnnouncements=true,SupportsConfigReplay=true,SupportsMultiSelect=true,SupportsSubTabs=true,SupportsTabSubTabs=true}
+assert(type(gethui)=="function","LIMBO HUB UI requires gethui().")
+local currentWindow
+function Limbo:PromptKey(config)
+    config=config or {}
+    local parent=gethui()
+    for _,name in ipairs({"LimboHubAccessUI","LimboHubReferenceUI"}) do local old=parent:FindFirstChild(name); if old and (name~="LimboHubReferenceUI" or not config.KeepWindow) then old:Destroy() end end
+    local accent=config.Accent or Color3.fromRGB(117,181,255)
+    local screen=Instance.new("ScreenGui"); screen.Name="LimboHubAccessUI"; screen.ResetOnSpawn=false; screen.DisplayOrder=100; screen.ScreenInsets=Enum.ScreenInsets.CoreUISafeInsets; screen.Parent=parent
+    local font=Font.new("rbxasset://fonts/families/BuilderSans.json",Enum.FontWeight.Bold)
+    local strong=Font.new("rbxasset://fonts/families/BuilderSans.json",Enum.FontWeight.ExtraBold)
+    local function make(class,props,p)
+        local obj=Instance.new(class); for k,v in pairs(props) do obj[k]=v end; obj.Parent=p; return obj
+    end
+    local function rounded(obj,radius) make("UICorner",{CornerRadius=UDim.new(0,radius)},obj) end
+    local function label(target,name,value,size,x,y,w,h,color)
+        return make("TextLabel",{Name=name,Text=value,TextSize=size,FontFace=font,TextColor3=color or Color3.fromRGB(240,246,255),BackgroundTransparency=1,TextXAlignment=Enum.TextXAlignment.Left,TextWrapped=true,Position=UDim2.fromOffset(x,y),Size=UDim2.fromOffset(w,h)},target)
+    end
+    local card=make("Frame",{Name="Card",AnchorPoint=Vector2.new(.5,.5),Position=UDim2.fromScale(.5,.5),Size=UDim2.fromOffset(448,400),BackgroundColor3=Color3.fromRGB(27,33,45),BorderSizePixel=0},screen)
+    rounded(card,18); make("UIStroke",{Color=Color3.fromRGB(96,112,137),Transparency=.35,Thickness=1},card)
+    local scale=make("UIScale",{},card)
+    local function fit() local v=screen.AbsoluteSize; scale.Scale=math.max(.05,math.min(1,(v.X-24)/448,(v.Y-24)/400)) end
+    local connection=screen:GetPropertyChangedSignal("AbsoluteSize"):Connect(fit); fit()
+    screen.Destroying:Connect(function() connection:Disconnect() end)
+    make("ImageLabel",{Name="Logo",Image=config.Logo or "rbxassetid://80136234982465",BackgroundTransparency=1,Position=UDim2.fromOffset(20,18),Size=UDim2.fromOffset(40,40),ScaleType=Enum.ScaleType.Fit},card)
+    local brand=label(card,"Brand",config.Title or "LIMBO HUB",22,72,16,310,28); brand.FontFace=strong
+    label(card,"Subtitle",config.Subtitle or "ACCESS PORTAL",12,72,44,310,18,accent)
+    local session=make("Frame",{Name="Session",BackgroundColor3=Color3.fromRGB(38,46,61),BorderSizePixel=0,Position=UDim2.fromOffset(20,78),Size=UDim2.fromOffset(408,52)},card); rounded(session,10)
+    local gameImage=config.GameIcon or ("rbxthumb://type=GameIcon&id="..tostring(game.GameId).."&w=150&h=150")
+    local gameIcon=make("ImageLabel",{Name="Icon",Image=gameImage,BackgroundColor3=Color3.fromRGB(48,61,81),BorderSizePixel=0,Position=UDim2.fromOffset(9,9),Size=UDim2.fromOffset(34,34),ScaleType=Enum.ScaleType.Crop},session); rounded(gameIcon,8)
+    local gameName=label(session,"GameName",config.GameName or "Roblox",15,54,6,204,23); gameName.TextWrapped=false; gameName.TextTruncate=Enum.TextTruncate.AtEnd
+    local executorName="Unknown"
+    if type(identifyexecutor)=="function" then local ok,name=pcall(identifyexecutor); if ok and type(name)=="string" then executorName=name end end
+    label(session,"Executor","via "..executorName,12,54,28,204,18,Color3.fromRGB(174,190,211))
+    local state=label(session,"State","Checking",13,270,14,126,24,accent); state.TextXAlignment=Enum.TextXAlignment.Right
+    label(card,"Description",config.Description or "Use a Free or Premium key. Keyless follows server policy.",14,20,144,408,34,Color3.fromRGB(202,212,227)).TextYAlignment=Enum.TextYAlignment.Top
+    local input=make("TextBox",{Name="KeyInput",Text="",PlaceholderText=config.Placeholder or "Paste your license key",ClearTextOnFocus=false,TextSize=16,FontFace=font,TextColor3=Color3.fromRGB(246,249,255),PlaceholderColor3=Color3.fromRGB(174,190,211),BackgroundColor3=Color3.fromRGB(22,28,40),BorderSizePixel=0,Position=UDim2.fromOffset(20,188),Size=UDim2.fromOffset(408,44)},card); rounded(input,10)
+    make("UIStroke",{Color=Color3.fromRGB(96,112,137),Transparency=.55},input)
+    make("UIPadding",{PaddingLeft=UDim.new(0,14),PaddingRight=UDim.new(0,14)},input)
+    local submit=make("TextButton",{Name="SubmitKey",Text="Verify Access",TextSize=16,FontFace=strong,TextColor3=Color3.fromRGB(19,29,45),AutoButtonColor=true,BackgroundColor3=accent,BorderSizePixel=0,Position=UDim2.fromOffset(20,244),Size=UDim2.fromOffset(408,40)},card); rounded(submit,10)
+    local status=label(card,"Status",config.Message or "Checking your access...",13,20,342,408,42,accent); status.TextYAlignment=Enum.TextYAlignment.Top
+    local view={Gui=screen}; local busy=false; local retryMode=false; local links={}
+    function view:SetStatus(message,failed) if screen.Parent then status.Text=message; status.TextColor3=failed and Color3.fromRGB(243,135,145) or accent end end
+    function view:SetState(value) if screen.Parent then state.Text=value end end
+    function view:SetBusy(value) busy=value; if screen.Parent then submit.Text=value and "Checking..." or (retryMode and "Retry connection" or "Verify Access"); input.TextEditable=not value; submit.AutoButtonColor=not value end end
+    function view:SetRetryMode(value)
+        retryMode=value; if not screen.Parent then return end
+        input.Visible=not value; card.Size=UDim2.fromOffset(448,value and 344 or 400)
+        submit.Position=UDim2.fromOffset(20,value and 188 or 244)
+        status.Position=UDim2.fromOffset(20,value and 286 or 342)
+        for i,b in ipairs(links) do b.Position=UDim2.fromOffset(20+(i-1)*139,value and 240 or 296) end
+        self:SetBusy(busy)
+    end
+    function view:Destroy() screen:Destroy() end
+    local function copyUrl(url)
+        local copy=setclipboard or toclipboard
+        local copied=type(copy)=="function" and pcall(copy,url)
+        view:SetStatus(copied and "Link copied to clipboard." or url,false)
+    end
+    for i,item in ipairs({{"GetKey","Get a key",config.GetKeyURL or "https://limbohub.my.id/get-key"},{"Discord","Discord",config.DiscordURL or "https://discord.gg/GtDHsXGJ4g"},{"Website","Website",config.WebsiteURL or "https://limbohub.my.id"}}) do
+        local b=make("TextButton",{Name=item[1],Text=item[2],TextSize=14,FontFace=font,TextColor3=Color3.fromRGB(202,212,227),AutoButtonColor=true,BackgroundColor3=Color3.fromRGB(38,46,61),BorderSizePixel=0,Position=UDim2.fromOffset(20+(i-1)*139,296),Size=UDim2.fromOffset(130,30)},card); rounded(b,8)
+        b.Activated:Connect(function() copyUrl(item[3]) end)
+        table.insert(links,b)
+    end
+    local close=make("TextButton",{Name="Close",Text="×",TextSize=22,FontFace=font,TextColor3=Color3.fromRGB(202,212,227),BackgroundTransparency=1,Position=UDim2.fromOffset(416,5),Size=UDim2.fromOffset(26,26)},card)
+    local function send() if not busy and screen.Parent and config.OnSubmit then config.OnSubmit(input.Text) end end
+    submit.Activated:Connect(send)
+    input.FocusLost:Connect(function(enter) if enter then send() end end)
+    close.Activated:Connect(function() if config.OnClose then config.OnClose() end; view:Destroy() end)
+    return view
+end
+function Limbo:CreateWindow(config)
+config=config or {}
+assert(type(config)=="table","Window configuration must be a table")
+local player=Players.LocalPlayer
+assert(player,"Limbo Hub must run on the client")
+local parent=gethui()
+local previous=parent:FindFirstChild("LimboHubReferenceUI")
+local saved=previous and previous:GetAttributes() or {}
+if previous then previous:Destroy() end
+local C={bg=Color3.fromRGB(27,33,45),sidebar=Color3.fromRGB(22,28,40),card=Color3.fromRGB(38,46,61),field=Color3.fromRGB(30,38,52),hover=Color3.fromRGB(48,61,81),border=Color3.fromRGB(96,112,137),text=Color3.fromRGB(246,249,255),muted=Color3.fromRGB(202,212,227),faint=Color3.fromRGB(174,190,211),blue=Color3.fromRGB(117,181,255),selected=Color3.fromRGB(43,65,99),off=Color3.fromRGB(73,83,102)}
+local BASE_W,BASE_H=1040,600
+local MIN_SCALE=.4
+local MIN_ZOOM=.1
+local MIN_TEXT_PIXELS=12
+local LOGO=config.Logo or "rbxassetid://80136234982465"
+local RESTORE_LOGO=config.RestoreLogo or "rbxassetid://84433189679664"
+local GAME_NAME=config.Subtitle or "NAMA GAME"
+local BRAND_NAME=config.Title or "LIMBO HUB"
+local MODE_TAB=config.ModeTab or "Eggs"
+local MODE_TABS=config.SubTabs or {"Steal","Manage"}
+assert(type(MODE_TABS)=="table" and #MODE_TABS>0,"SubTabs must contain at least one name")
+local MODE_LABELS=config.ModeLabels or {}
+local MODE_GROUPS=table.clone(config.TabSubTabs or {})
+assert(MODE_GROUPS[MODE_TAB]==nil,"Use SubTabs to configure ModeTab")
+MODE_GROUPS[MODE_TAB]=MODE_TABS
+local MODE_WIDTH=(config.SubTabs or config.ModeLabels) and 148 or 116
+local FONT_BODY=Font.new("rbxasset://fonts/families/BuilderSans.json",Enum.FontWeight.Bold)
+local FONT_STRONG=Font.new("rbxasset://fonts/families/BuilderSans.json",Enum.FontWeight.ExtraBold)
+local fontScale=1
+local textRuns={}
+local lastRasterScale
+local function rasterText(obj,designSize)
+    local screenPixels=math.max(MIN_TEXT_PIXELS,math.floor(designSize*fontScale+.5))
+    local size=math.max(1,math.floor(screenPixels/fontScale+.5))
+    if obj.TextSize~=size then obj.TextSize=size end
+end
+local function make(class,props,target)
+    local obj=Instance.new(class)
+    for key,value in pairs(props) do obj[key]=value end
+    if obj:IsA("TextLabel") or obj:IsA("TextBox") then
+        textRuns[obj]=obj.TextSize; rasterText(obj,obj.TextSize)
+        obj.Destroying:Once(function() textRuns[obj]=nil end)
+    end
+    obj.Parent=target; return obj
+end
+local function corner(obj,radius)
+    local c=obj:FindFirstChildOfClass("UICorner") or make("UICorner",{},obj)
+    c.CornerRadius=UDim.new(0,radius or 12)
+end
+local function border(obj,transparency)
+    return make("UIStroke",{Color=C.border,Thickness=1,Transparency=transparency or .5,ApplyStrokeMode=Enum.ApplyStrokeMode.Border},obj)
+end
+local function box(target,name,color) return make("Frame",{Name=name,BackgroundColor3=color or C.card,BorderSizePixel=0},target) end
+local function text(target,name,value,size,color,bold)
+    return make("TextLabel",{Name=name,Text=value,BackgroundTransparency=1,TextSize=math.max(size or 16,14),TextColor3=color or C.text,FontFace=bold and FONT_STRONG or FONT_BODY,TextScaled=false,TextTruncate=Enum.TextTruncate.AtEnd,TextStrokeTransparency=1,TextXAlignment=Enum.TextXAlignment.Left,TextYAlignment=Enum.TextYAlignment.Center},target)
+end
+local function place(obj,x,y,w,h) obj.Position=UDim2.fromOffset(x,y); obj.Size=UDim2.fromOffset(w,h) end
+local function icon(target,name,size,color)
+    assert(LUCIDE[name],"Missing Lucide icon: "..name)
+    local asset=LUCIDE[name]
+    local f=make("ImageLabel",{Name="Icon",BackgroundTransparency=1,Size=UDim2.fromOffset(size,size),Image="rbxassetid://"..asset[1],ImageRectSize=Vector2.new(asset[2],asset[3]),ImageRectOffset=Vector2.new(asset[4],asset[5]),ImageColor3=color or C.muted,ResampleMode=Enum.ResamplerMode.Default,ScaleType=Enum.ScaleType.Fit},target)
+    f:SetAttribute("Lucide",name)
+    return f
+end
+local function tint(f,color) f.ImageColor3=color end
+local function button(target,name)
+    local b=make("TextButton",{Name=name,Text="",AutoButtonColor=false,BorderSizePixel=0,BackgroundTransparency=1},target); corner(b,10); return b
+end
+local gui=make("ScreenGui",{Name="LimboHubReferenceUI",ResetOnSpawn=false,DisplayOrder=90,ScreenInsets=Enum.ScreenInsets.None,ClipToDeviceSafeArea=false,ZIndexBehavior=Enum.ZIndexBehavior.Sibling},parent)
+gui:SetAttribute("UIOnly",true); gui:SetAttribute("IconLibrary","Lucide"); gui:SetAttribute("IconResolution",256)
+gui:SetAttribute("UserZoom",type(saved.UserZoom)=="number" and math.clamp(saved.UserZoom,MIN_ZOOM,10) or 1)
+local connections={}
+local function track(c) table.insert(connections,c); return c end
+local function animate(obj,props,duration)
+    for key,value in pairs(props) do if obj[key]~=value then obj[key]=value end end
+end
+local function hover(b)
+    local overlay=box(b,"Hover",C.blue); overlay.Size=UDim2.fromScale(1,1); overlay.BackgroundTransparency=1; corner(overlay,10)
+    b.MouseEnter:Connect(function() animate(overlay,{BackgroundTransparency=.95},.12) end)
+    b.MouseLeave:Connect(function() animate(overlay,{BackgroundTransparency=1},.18) end)
+end
+local canvas=make("ScrollingFrame",{Name="Canvas",Size=UDim2.fromScale(1,1),BackgroundTransparency=1,BorderSizePixel=0,CanvasSize=UDim2.new(),ScrollBarThickness=4,ScrollBarImageColor3=C.faint,ScrollingDirection=Enum.ScrollingDirection.XY,ElasticBehavior=Enum.ElasticBehavior.WhenScrollable,Active=true,ClipsDescendants=true},gui)
+local overlay=box(gui,"Overlay"); overlay.Size=UDim2.fromScale(1,1); overlay.BackgroundTransparency=1; overlay.ZIndex=2
+local root=box(canvas,"Window",C.bg); root.BackgroundTransparency=.06; root.AnchorPoint=Vector2.new(.5,.5); root.Position=UDim2.fromScale(.5,.5); root.Size=UDim2.fromOffset(BASE_W,BASE_H); corner(root,16); border(root,.28)
+local uiScale=make("UIScale",{Scale=1},root)
+local sidebar=box(root,"Sidebar",C.sidebar); sidebar.BackgroundTransparency=.1; corner(sidebar,16)
+local brandIcon=make("ImageLabel",{Name="Logo",Image=LOGO,BackgroundTransparency=1,ScaleType=Enum.ScaleType.Fit},sidebar)
+local brand=text(sidebar,"Brand",BRAND_NAME,20,C.text,true)
+brand.TextXAlignment=Enum.TextXAlignment.Center
+local version=text(sidebar,"Version",config.Version or "v1.0",14,C.muted)
+version.TextXAlignment=Enum.TextXAlignment.Center
+local profile=box(sidebar,"Profile"); profile.BackgroundTransparency=1
+local profileLine=box(profile,"Divider",C.border); profileLine.BackgroundTransparency=.65; profileLine.Size=UDim2.new(1,0,0,1)
+local avatar=make("ImageLabel",{Name="Avatar",Image="",BackgroundColor3=C.field,BorderSizePixel=0},profile); corner(avatar,22); border(avatar,.4)
+local welcome=text(profile,"Welcome","Welcome,",13,C.muted)
+local maskedName=text(profile,"Player",string.sub(player.Name,1,3).."***",14,C.text,true)
+task.spawn(function()
+    local ok,image=pcall(function() return Players:GetUserThumbnailAsync(player.UserId,Enum.ThumbnailType.HeadShot,Enum.ThumbnailSize.Size100x100) end)
+    if ok and gui.Parent then avatar.Image=image end
+end)
+local nav=make("ScrollingFrame",{Name="Navigation",BackgroundTransparency=1,BorderSizePixel=0,ScrollBarThickness=0,ScrollBarImageTransparency=1,CanvasSize=UDim2.new(),ScrollingDirection=Enum.ScrollingDirection.Y,ZIndex=4},root)
+local header=box(root,"Header"); header.BackgroundTransparency=1
+local drag=button(header,"DragBar"); drag.Size=UDim2.fromScale(1,1)
+local sidebarToggle=button(header,"SidebarToggle"); hover(sidebarToggle)
+local sidebarCloseIcon=icon(sidebarToggle,"panel-left-close",20,C.muted); sidebarCloseIcon.Name="CloseIcon"; sidebarCloseIcon.Position=UDim2.fromOffset(8,9)
+local sidebarOpenIcon=icon(sidebarToggle,"panel-right-close",20,C.muted); sidebarOpenIcon.Name="OpenIcon"; sidebarOpenIcon.Position=UDim2.fromOffset(8,9)
+local title=text(header,"Title","Eggs",25,C.text,true)
+local headerLine=box(header,"Divider",C.border); headerLine.BackgroundTransparency=.7
+local searchShell=box(header,"SearchShell",C.field); corner(searchShell,12); local searchBorder=border(searchShell,.5)
+local searchIcon=icon(searchShell,"search",18,C.faint); searchIcon.Position=UDim2.fromOffset(12,10)
+local search=make("TextBox",{Name="Search",Text="",PlaceholderText="Search features...",ClearTextOnFocus=false,BackgroundTransparency=1,TextColor3=C.text,PlaceholderColor3=C.faint,TextSize=15,FontFace=FONT_BODY,TextXAlignment=Enum.TextXAlignment.Left,Position=UDim2.fromOffset(42,0),Size=UDim2.new(1,-55,1,0)},searchShell)
+local updateFeatureSearch
+search.Focused:Connect(function() animate(searchBorder,{Color=C.blue,Transparency=.25}); if updateFeatureSearch then updateFeatureSearch() end end)
+search.FocusLost:Connect(function() animate(searchBorder,{Color=C.border,Transparency=.5}) end)
+local minimize=button(header,"Minimize"); hover(minimize)
+local minus=icon(minimize,"minus",20,C.muted); minus.Position=UDim2.fromOffset(12,12)
+local modes=make("ScrollingFrame",{Name="ModeBar",BackgroundColor3=C.sidebar,BorderSizePixel=0,ScrollBarThickness=0,CanvasSize=UDim2.new(),ScrollingDirection=Enum.ScrollingDirection.X,ElasticBehavior=Enum.ElasticBehavior.Never,ClipsDescendants=true},root); corner(modes,12); border(modes,.8)
+local modeIndicator=box(modes,"ActivePill",C.hover); corner(modeIndicator,9)
+local modeButtons,modeStates={},{}
+for page,names in pairs(MODE_GROUPS) do
+    assert(type(page)=="string" and type(names)=="table" and #names>0,"Each tab requires nonempty SubTabs")
+    local restored=saved["Mode_"..page] or (page==MODE_TAB and saved.Mode)
+    modeStates[page]=table.find(names,restored) and restored or names[1]
+    gui:SetAttribute("Mode_"..page,modeStates[page])
+    for i,name in ipairs(names) do
+        assert(type(name)=="string" and name:match("%S") and not modeButtons[name],"Subtab names must be nonempty and unique")
+        local b=button(modes,name); hover(b); place(b,4+(i-1)*(MODE_WIDTH+2),4,MODE_WIDTH,44)
+        local caption=text(b,"Label",MODE_LABELS[name] or name,14,C.muted,true); place(caption,8,0,MODE_WIDTH-16,44)
+        caption.TextXAlignment=Enum.TextXAlignment.Center
+        modeButtons[name]=b
+    end
+end
+local content=make("ScrollingFrame",{Name="Content",BackgroundTransparency=1,BorderSizePixel=0,CanvasSize=UDim2.new(),ScrollBarThickness=3,ScrollBarImageColor3=C.faint,ScrollingDirection=Enum.ScrollingDirection.Y,ElasticBehavior=Enum.ElasticBehavior.WhenScrollable,ClipsDescendants=true},root)
+local footer=box(root,"Footer"); footer.BackgroundTransparency=1
+local footerLine=box(footer,"Divider",C.border); footerLine.BackgroundTransparency=.7; footerLine.Size=UDim2.new(1,0,0,1)
+local footerStatus=text(footer,"Status","",13,C.muted)
+footerStatus.TextXAlignment=Enum.TextXAlignment.Center
+footerStatus.Position=UDim2.fromOffset(44,0); footerStatus.Size=UDim2.new(1,-88,1,0)
+footerStatus.TextTruncate=Enum.TextTruncate.AtEnd
+local resizeHandle=button(footer,"ResizeHandle"); hover(resizeHandle)
+resizeHandle.AnchorPoint=Vector2.new(1,1); resizeHandle.Position=UDim2.new(1,20,1,0); resizeHandle.Size=UDim2.fromOffset(44,35)
+local resizeIcon=icon(resizeHandle,"move-down-right",20,C.muted); resizeIcon.Position=UDim2.fromOffset(12,8)
+local executorTitle=RunService:IsStudio() and "Roblox Studio" or "Roblox"
+local detector=type(identifyexecutor)=="function" and identifyexecutor or getexecutorname
+if type(detector)=="function" then
+    local ok,name=pcall(detector)
+    if ok and type(name)=="string" and name~="" then executorTitle=name end
+end
+local fpsValue="..."
+local function updateFooter()
+    footerStatus.Text=string.format("%s   |   %s   |   %s FPS",GAME_NAME,executorTitle,tostring(fpsValue))
+end
+updateFooter()
+local fpsWorker=task.spawn(function()
+    while gui.Parent do
+        task.wait(1)
+        if gui.Parent and gui.Enabled and root.Visible then
+            local elapsed,samples=0,0
+            for _=1,8 do
+                if not gui.Parent or not gui.Enabled or not root.Visible then break end
+                elapsed+=RunService.RenderStepped:Wait()
+                samples+=1
+            end
+            if gui.Parent and elapsed>0 and gui.Enabled and root.Visible then
+                local nextFps=math.floor(samples/elapsed+.5)
+                if nextFps~=fpsValue then fpsValue=nextFps; updateFooter() end
+            end
+        end
+    end
+end)
+local toast=box(overlay,"Toast",C.card); toast.Visible=false; toast.ZIndex=200; corner(toast,14); border(toast,.3)
+toast.AnchorPoint=Vector2.new(1,1); toast.Position=UDim2.new(1,-16,1,-40); toast.Size=UDim2.fromOffset(360,84); toast.AutomaticSize=Enum.AutomaticSize.Y
+make("UIPadding",{PaddingBottom=UDim.new(0,14)},toast)
+local toastScale=make("UIScale",{Scale=1},toast)
+make("ImageLabel",{Name="Logo",Image=LOGO,BackgroundTransparency=1,ScaleType=Enum.ScaleType.Fit,Position=UDim2.fromOffset(16,16),Size=UDim2.fromOffset(44,44)},toast)
+local toastTitle=text(toast,"Title",BRAND_NAME,16,C.text,true); place(toastTitle,76,12,268,24)
+local toastText=text(toast,"Message","",15,C.muted); toastText.TextWrapped=true; toastText.TextYAlignment=Enum.TextYAlignment.Top; toastText.Position=UDim2.fromOffset(76,39); toastText.Size=UDim2.new(1,-92,0,0); toastText.AutomaticSize=Enum.AutomaticSize.Y
+textRuns[toastTitle]=nil; textRuns[toastText]=nil
+local function fitToast()
+    toastScale.Scale=math.min(1,math.max(1,canvas.AbsoluteSize.X-24)/360)
+end
+track(canvas:GetPropertyChangedSignal("AbsoluteSize"):Connect(fitToast)); fitToast()
+local savedRestore=type(saved.RestoreX)=="number" and type(saved.RestoreY)=="number"
+local restore=make("TextButton",{Name="Restore",Text="",BackgroundTransparency=1,BorderSizePixel=0,AutoButtonColor=false,ZIndex=100,Visible=false,Size=UDim2.fromOffset(40,40),Position=savedRestore and UDim2.fromScale(saved.RestoreX,saved.RestoreY) or UDim2.fromOffset(20,150)},overlay)
+local restoreIcon=make("ImageLabel",{Name="Logo",Image=RESTORE_LOGO,BackgroundTransparency=1,ScaleType=Enum.ScaleType.Fit,Position=UDim2.fromOffset(0,0),Size=UDim2.fromScale(1,1)},restore)
+local restoreDrag
+local restoreBlockUntil=0
+local function clampRestore(position)
+    local size=overlay.AbsoluteSize
+    if size.X<1 or size.Y<1 then return end
+    local x=math.clamp(position.X,24-restore.AbsoluteSize.X,size.X-24)
+    local y=math.clamp(position.Y,24-restore.AbsoluteSize.Y,size.Y-24)
+    restore.Position=UDim2.fromScale(x/size.X,y/size.Y)
+    gui:SetAttribute("RestoreX",x/size.X); gui:SetAttribute("RestoreY",y/size.Y)
+end
+track(overlay:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+    restoreDrag=nil
+    clampRestore(Vector2.new(restore.Position.X.Scale*overlay.AbsoluteSize.X+restore.Position.X.Offset,restore.Position.Y.Scale*overlay.AbsoluteSize.Y+restore.Position.Y.Offset))
+end))
+restore.InputBegan:Connect(function(input)
+    if input.UserInputType==Enum.UserInputType.MouseButton1 or input.UserInputType==Enum.UserInputType.Touch then
+        if restoreDrag then return end
+        restoreBlockUntil=0
+        restoreDrag={input=input,start=input.Position,origin=restore.AbsolutePosition-overlay.AbsolutePosition,moved=false}
+    end
+end)
+track(Input.InputChanged:Connect(function(input)
+    local state=restoreDrag
+    if not state or not (input==state.input or state.input.UserInputType==Enum.UserInputType.MouseButton1 and input.UserInputType==Enum.UserInputType.MouseMovement) then return end
+    local delta=input.Position-state.start
+    if delta.Magnitude>=6 then state.moved=true end
+    if state.moved then
+        restoreBlockUntil=os.clock()+.3
+        clampRestore(state.origin+Vector2.new(delta.X,delta.Y))
+    end
+end))
+track(Input.InputEnded:Connect(function(input)
+    local state=restoreDrag
+    if not restore.Visible then restoreDrag=nil; return end
+    if state and (input==state.input or state.input.UserInputType==Enum.UserInputType.MouseButton1 and input.UserInputType==Enum.UserInputType.MouseButton1) then
+        if state.moved then restoreBlockUntil=os.clock()+.3 end
+        restoreDrag=nil
+    end
+end))
+track(Input.WindowFocusReleased:Connect(function()
+    if restoreDrag then restoreBlockUntil=os.clock()+.3 end
+    restoreDrag=nil
+end))
+local searchDismiss=button(root,"DismissFeatureSearch"); searchDismiss.Size=UDim2.fromScale(1,1); searchDismiss.ZIndex=50; searchDismiss.Visible=false
+local featureResults=make("ScrollingFrame",{Name="FeatureSearchResults",BackgroundColor3=C.field,BorderSizePixel=0,ScrollBarThickness=3,ScrollBarImageColor3=C.faint,CanvasSize=UDim2.new(),ScrollingDirection=Enum.ScrollingDirection.Y,ClipsDescendants=true,ZIndex=60,Visible=false},root)
+corner(featureResults,12); border(featureResults,.25)
+local function closeFeatureSearch()
+    featureResults.Visible=false; searchDismiss.Visible=false; header.ZIndex=1
+end
+searchDismiss.Activated:Connect(function() search:ReleaseFocus(); closeFeatureSearch() end)
+local cards,navButtons={},{}
+local navItems,pageNames,controls={},{},{}
+local ready=false
+local layout,closeDropdown,performLayout
+local layoutQueued,layoutRunning,layoutAgain=false,false,false
+layout=function()
+    if not ready or not gui.Parent then return end
+    if layoutRunning then layoutAgain=true; return end
+    if layoutQueued then return end
+    layoutQueued=true
+    task.defer(function()
+        layoutQueued=false
+        if not gui.Parent then return end
+        layoutRunning=true
+        local ok,err=pcall(performLayout)
+        layoutRunning=false
+        if not ok then warn("[LimboUI Layout] "..tostring(err)) end
+        if layoutAgain then layoutAgain=false; layout() end
+    end)
+end
+local activePage=config.DefaultTab or saved.ActivePage or "Eggs"
+local activeMode=modeStates[activePage] or modeStates[MODE_TAB]
+local sidebarCollapsed=saved.SidebarCollapsed==true
+gui:SetAttribute("SidebarCollapsed",sidebarCollapsed)
+local openMenu
+local logicalW,logicalH,scaleFactor=BASE_W,BASE_H,1
+local autoScaleFactor,screenScaleLimit=1,1
+local panArea=Vector2.zero
+local panEnabled=false
+local function getPanArea(scale)
+    local view=canvas.AbsoluteSize
+    local margin=math.min(view.X,view.Y)<700 and 8 or 20
+    return Vector2.new(math.max(view.X,logicalW*scale+margin*2),math.max(view.Y,logicalH*scale+margin*2))
+end
+local dragOffset=Vector2.new(type(saved.WindowOffsetX)=="number" and saved.WindowOffsetX or 0,type(saved.WindowOffsetY)=="number" and saved.WindowOffsetY or 0)
+gui:SetAttribute("WindowOffsetX",dragOffset.X); gui:SetAttribute("WindowOffsetY",dragOffset.Y)
+local dragging,dragStart,dragOrigin,sliding
+local resizing
+local function stopResize()
+    resizing=nil; tint(resizeIcon,C.muted)
+end
+local toastVersion=0
+local function feedback(message,duration)
+    toastVersion+=1; local n=toastVersion; toastText.Text=message; toast.Visible=true
+    task.delay(duration or 3,function() if gui.Parent and toastVersion==n then toast.Visible=false end end)
+end
+closeDropdown=function()
+    closeFeatureSearch()
+    if openMenu then openMenu:Destroy(); openMenu=nil end
+    local dismiss=root:FindFirstChild("DismissDropdown"); if dismiss then dismiss:Destroy() end
+end
+local function initial(name,default)
+    local value=saved[name]; if typeof(value)~=typeof(default) then value=default end
+    gui:SetAttribute(name,value); return value
+end
+local function popupBounds()
+    local topLeft=(canvas.AbsolutePosition-root.AbsolutePosition)/scaleFactor
+    local bottomRight=topLeft+canvas.AbsoluteSize/scaleFactor
+    return math.max(12,topLeft.X+12),math.max(12,topLeft.Y+12),math.min(logicalW-12,bottomRight.X-12),math.min(logicalH-12,bottomRight.Y-12)
+end
+local function card(pageName,mode,name,heading,description,iconName,column)
+    local f=box(content,name,C.card); f.BackgroundTransparency=.12; corner(f,12); border(f,.6)
+    make("UIGradient",{Color=ColorSequence.new(Color3.new(1,1,1),Color3.fromRGB(238,242,250)),Rotation=80},f)
+    local head=button(f,"Collapse"); head.Size=UDim2.new(1,0,0,54)
+    if iconName~=false then local ico=icon(head,iconName,24,C.blue); ico.Position=UDim2.fromOffset(18,16) end
+    local caption=text(head,"Title",heading,19,C.text,true); caption.Position=UDim2.fromOffset(iconName==false and 18 or 58,11); caption.Size=UDim2.new(1,iconName==false and -60 or -100,0,33)
+    local separator=box(f,"Divider",C.border); separator.BackgroundTransparency=.7; separator.Position=UDim2.fromOffset(18,54); separator.Size=UDim2.new(1,-36,0,1)
+    local arrow=icon(head,"chevron-down",16,C.muted); arrow.Name="Chevron"; arrow.Position=UDim2.new(1,-34,0,21); arrow.Rotation=180
+    local body=box(f,"Body"); body.BackgroundTransparency=1; body.Position=UDim2.fromOffset(0,60)
+    local c={frame=f,body=body,arrow=arrow,page=pageName,mode=mode,column=column or 1,heading=heading,rows={},collapsed=false}
+    head.Activated:Connect(function() closeDropdown(); c.collapsed=not c.collapsed; f:SetAttribute("Collapsed",c.collapsed); layout() end)
+    table.insert(cards,c); return c
+end
+local function row(c,kind,name,caption)
+    local r={kind=kind,name=name,caption=caption,card=c}; r.frame=box(c.body,name); r.frame.BackgroundTransparency=1
+    if kind=="toggle" or kind=="select" then
+        local divider=box(r.frame,"Divider",C.border); divider.BackgroundTransparency=.83; divider.Position=UDim2.new(0,0,1,-1); divider.Size=UDim2.new(1,0,0,1)
+    end
+    table.insert(c.rows,r); return r
+end
+local function toggle(c,name,caption,default)
+    local r=row(c,"toggle",name,caption)
+    local b=button(r.frame,"Toggle"); b.Size=UDim2.fromScale(1,1); hover(b)
+    r.label=text(b,"Label",caption,16,C.text); r.label.TextWrapped=true; r.label.Position=UDim2.fromOffset(2,0); r.label.Size=UDim2.new(1,-62,1,0)
+    local bar=box(b,"Track",C.off); corner(bar,12); bar.Position=UDim2.new(1,-42,.5,-12); bar.Size=UDim2.fromOffset(40,24)
+    local knob=box(bar,"Knob",C.muted); corner(knob,9); knob.Size=UDim2.fromOffset(18,18)
+    local function paint(value,instant)
+        b:SetAttribute("Value",value)
+        local props={Position=UDim2.fromOffset(value and bar.Size.X.Offset-knob.Size.X.Offset-3 or 3,3),BackgroundColor3=value and Color3.fromRGB(249,252,255) or C.muted}
+        if instant then for k,v in pairs(props) do knob[k]=v end; bar.BackgroundColor3=value and C.blue or C.off
+        else animate(knob,props); animate(bar,{BackgroundColor3=value and C.blue or C.off}) end
+    end
+    paint(initial(name,default),true)
+    r.Set=function(value)
+        assert(type(value)=="boolean","Toggle value must be boolean")
+        gui:SetAttribute(name,value); paint(value)
+    end
+    b.Activated:Connect(function() r.Set(not gui:GetAttribute(name)) end)
+    return r
+end
+local function dropdown(c,name,caption,options,default,full,multi,placeholder)
+    local r=row(c,full and "selectFull" or "select",name,caption)
+    r.label=text(r.frame,"Label",caption,16,C.muted); r.label.TextWrapped=true
+    local b=button(r.frame,"Select"); b.BackgroundColor3=C.field; b.BackgroundTransparency=0; border(b,.6); hover(b); r.control=b
+    local value=multi and "" or initial(name,default)
+    if not multi and not table.find(options,value) then value=default; gui:SetAttribute(name,value) end
+    local captionLabel=text(b,"Value",value,16,C.text); captionLabel.Position=UDim2.fromOffset(12,0); captionLabel.Size=UDim2.new(1,-45,1,0); captionLabel.TextTruncate=Enum.TextTruncate.AtEnd
+    local arrow=icon(b,"chevron-down",15,C.muted); arrow.Position=UDim2.new(1,-28,.5,-7.5)
+    local optionRows={}
+    local ownerMenu
+    local optionSet={}
+    for _,option in ipairs(options) do optionSet[option]=true end
+    local Http=multi and game:GetService("HttpService")
+    local function selectionOf(value,allowMissing)
+        if type(value)=="string" then local ok,decoded=pcall(Http.JSONDecode,Http,value); if not ok then return nil end; value=decoded end
+        if type(value)~="table" then return nil end
+        local selected,seen={},{}
+        for key,item in pairs(value) do
+            if type(key)~="number" or key%1~=0 or key<1 or key>#value or type(item)~="string" then return nil end
+            if not allowMissing and not optionSet[item] then return nil end
+        end
+        for _,item in ipairs(value) do
+            if optionSet[item] and not seen[item] then table.insert(selected,item); seen[item]=true end
+        end
+        return selected
+    end
+    local function paintSelection()
+        if not multi then return end
+        local selected=r.Get()
+        captionLabel.Text=#selected>0 and table.concat(selected,", ") or (placeholder or "Any")
+        for option,item in pairs(optionRows) do
+            local on=table.find(selected,option)~=nil
+            item.label.TextColor3=on and C.blue or C.text; item.check.Visible=on
+        end
+    end
+    r.multi=multi==true
+    if multi then
+        r.Get=function() return selectionOf(gui:GetAttribute(name),true) or {} end
+        r.Validate=function(nextValue) return selectionOf(nextValue,false)~=nil end
+        r.Set=function(nextValue)
+            local selected=selectionOf(nextValue,false); assert(selected,"Invalid dropdown selections")
+            gui:SetAttribute(name,Http:JSONEncode(selected)); paintSelection()
+        end
+        r.Set(selectionOf(saved[name],true) or selectionOf(default,false) or {})
+        track(gui:GetAttributeChangedSignal(name):Connect(paintSelection))
+    else
+        r.Set=function(nextValue)
+            assert(table.find(options,nextValue),"Dropdown value is not in Values")
+            captionLabel.Text=nextValue; gui:SetAttribute(name,nextValue)
+        end
+    end
+    r.options=options
+    r.Refresh=function(values)
+        assert(type(values)=="table","Dropdown values must be a table")
+        for _,value in ipairs(values) do assert(type(value)=="string","Dropdown values must be strings") end
+        closeDropdown(); local selected=multi and r.Get()
+        options=(multi or #values>0) and table.clone(values) or {"None"}; r.options=options; optionRows={}
+        optionSet={}; for _,option in ipairs(options) do optionSet[option]=true end
+        if multi then r.Set(selectionOf(selected,true))
+        elseif not table.find(options,gui:GetAttribute(name)) then r.Set(options[1]) end
+    end
+    b.Activated:Connect(function()
+        if openMenu and openMenu:GetAttribute("Owner")==name then closeDropdown(); return end
+        closeDropdown()
+        local dismiss=button(root,"DismissDropdown"); dismiss.Size=UDim2.fromScale(1,1); dismiss.ZIndex=50; dismiss.Activated:Connect(closeDropdown)
+        local left,top,right,bottom=popupBounds()
+        local optionH=math.max(44,28/scaleFactor); local optionStep=optionH+2
+        local searchH=math.max(36,28/scaleFactor); local listTop=searchH+16
+        local width=math.min(right-left,math.max(b.AbsoluteSize.X/scaleFactor,208,180/scaleFactor))
+        local height=math.min((#options+(multi and 1 or 0))*optionStep+listTop+10,bottom-top,math.max(320,240/scaleFactor))
+        local p=(b.AbsolutePosition-root.AbsolutePosition)/scaleFactor
+        local y=p.Y+b.AbsoluteSize.Y/scaleFactor+6; if y+height>bottom then y=p.Y-height-6 end
+        y=math.clamp(y,top,bottom-height)
+        local menu=box(root,"DropdownMenu",C.hover); menu.ZIndex=60; menu.ClipsDescendants=true
+        place(menu,math.clamp(p.X,left,right-width),y,width,height); corner(menu,12); border(menu,.15); menu:SetAttribute("Owner",name); openMenu=menu
+        local searchField=box(menu,"SearchField",C.field); searchField.ZIndex=61; place(searchField,8,8,width-16,searchH); corner(searchField,8); border(searchField,.65)
+        local searchGlyph=icon(searchField,"search",16,C.faint); searchGlyph.Position=UDim2.fromOffset(10,10)
+        local popupSearch=make("TextBox",{Name="Search",Text="",PlaceholderText="Search options...",ClearTextOnFocus=false,BackgroundTransparency=1,TextColor3=C.text,PlaceholderColor3=C.faint,TextSize=15,FontFace=FONT_BODY,TextXAlignment=Enum.TextXAlignment.Left,ZIndex=62,Position=UDim2.fromOffset(34,0),Size=UDim2.new(1,-42,1,0)},searchField)
+        local list=make("ScrollingFrame",{Name="Options",BackgroundTransparency=1,BorderSizePixel=0,ScrollBarThickness=3,ScrollBarImageColor3=C.faint,CanvasSize=UDim2.new(),ScrollingDirection=Enum.ScrollingDirection.Y,ZIndex=61,Position=UDim2.fromOffset(4,listTop),Size=UDim2.new(1,-8,1,-listTop-4)},menu)
+        local noResults=text(list,"NoResults","No results found",14,C.muted); noResults.TextXAlignment=Enum.TextXAlignment.Center; place(noResults,4,0,width-16,optionH); noResults.Visible=false
+        local choices={}
+        optionRows={}
+        ownerMenu=menu
+        menu.Destroying:Connect(function() if ownerMenu==menu then optionRows={}; ownerMenu=nil end end)
+        if multi then
+            local clear=button(list,"ClearSelection"); clear.ZIndex=62; place(clear,0,0,width-8,optionH); hover(clear)
+            local label=text(clear,"Label","Clear selection",14,C.muted); label.Position=UDim2.fromOffset(12,0); label.Size=UDim2.new(1,-24,1,0)
+            clear.Activated:Connect(function() r.Set({}) end)
+            table.insert(choices,{button=clear,label="",always=true})
+        end
+        if #options>40 then
+            local pool,filtered={},{}
+            local offset=multi and 1 or 0
+            local visibleRows=math.ceil(math.max(optionH,height-listTop-4)/optionStep)+2
+            for index=1,visibleRows do
+                local choice=button(list,"Option"..index); choice.ZIndex=62; hover(choice)
+                local caption=text(choice,"Label","",14,C.text); caption.Position=UDim2.fromOffset(12,0); caption.Size=UDim2.new(1,-44,1,0)
+                local check=icon(choice,"check",16,C.blue); check.Position=UDim2.new(1,-28,.5,-8)
+                local item={button=choice,label=caption,check=check}
+                pool[index]=item
+                choice.Activated:Connect(function()
+                    local option=item.option; if not option then return end
+                    if multi then
+                        local selected=r.Get(); local found=table.find(selected,option)
+                        if found then table.remove(selected,found) else table.insert(selected,option) end
+                        r.Set(selected)
+                    else r.Set(option); closeDropdown() end
+                end)
+            end
+            local function renderOptions()
+                optionRows={}
+                local first=math.max(1,math.floor(list.CanvasPosition.Y/optionStep)+1-offset)
+                local selected=multi and r.Get()
+                for index,item in ipairs(pool) do
+                    local position=first+index-1
+                    local option=filtered[position]
+                    item.option=option; item.button.Visible=option~=nil
+                    if option then
+                        place(item.button,0,(position-1+offset)*optionStep,width-8,optionH)
+                        item.label.Text=option
+                        local on=multi and table.find(selected,option)~=nil or not multi and option==captionLabel.Text
+                        item.label.TextColor3=on and C.blue or C.text; item.check.Visible=on
+                        optionRows[option]=item
+                    end
+                end
+            end
+            local function searchOptions()
+                local query=string.match(string.lower(popupSearch.Text),"^%s*(.-)%s*$")
+                filtered={}
+                for _,option in ipairs(options) do
+                    if query=="" or string.find(string.lower(option),query,1,true) then table.insert(filtered,option) end
+                end
+                list.CanvasSize=UDim2.fromOffset(0,math.max(optionH,(#filtered+offset)*optionStep)+(multi and #filtered==0 and optionH or 0))
+                list.CanvasPosition=Vector2.zero
+                noResults.Position=UDim2.fromOffset(4,offset*optionStep); noResults.Visible=#filtered==0
+                renderOptions()
+            end
+            list:GetPropertyChangedSignal("CanvasPosition"):Connect(renderOptions)
+            popupSearch:GetPropertyChangedSignal("Text"):Connect(searchOptions)
+            searchOptions()
+            if not Input.TouchEnabled then popupSearch:CaptureFocus() end
+            return
+        end
+        local selected=multi and r.Get()
+        for i,opt in ipairs(options) do
+            local choice=button(list,"Option"..i); choice.ZIndex=62; place(choice,0,(i-1)*optionStep,width-8,optionH); hover(choice)
+            local on=multi and table.find(selected,opt)~=nil or not multi and opt==captionLabel.Text
+            local caption=text(choice,"Label",opt,14,on and C.blue or C.text); caption.Position=UDim2.fromOffset(12,0); caption.Size=UDim2.new(1,-44,1,0)
+            local check=icon(choice,"check",16,C.blue); check.Position=UDim2.new(1,-28,.5,-8); check.Visible=on
+            optionRows[opt]={label=caption,check=check}
+            choice.Activated:Connect(function()
+                if multi then
+                    local nextValue=r.Get(); local index=table.find(nextValue,opt)
+                    if index then table.remove(nextValue,index) else table.insert(nextValue,opt) end
+                    r.Set(nextValue)
+                else r.Set(opt); closeDropdown() end
+            end)
+            table.insert(choices,{button=choice,label=string.lower(opt)})
+        end
+        local function filterOptions()
+            local query=string.match(string.lower(popupSearch.Text),"^%s*(.-)%s*$")
+            local count,matched=0,0
+            for _,item in ipairs(choices) do
+                local matches=item.always or query=="" or string.find(item.label,query,1,true)~=nil
+                item.button.Visible=matches
+                if matches then
+                    item.button.Position=UDim2.fromOffset(0,count*optionStep); count+=1
+                    if not item.always then matched+=1 end
+                end
+            end
+            list.CanvasPosition=Vector2.zero; list.CanvasSize=UDim2.fromOffset(0,math.max(count*optionStep,optionH)+(multi and matched==0 and optionH or 0))
+            noResults.Position=UDim2.fromOffset(4,multi and matched==0 and optionStep or 0)
+            noResults.Visible=matched==0
+        end
+        popupSearch:GetPropertyChangedSignal("Text"):Connect(filterOptions)
+        filterOptions()
+        if not Input.TouchEnabled then popupSearch:CaptureFocus() end
+    end)
+    return r
+end
+local function actionButton(r,caption,iconName,primary)
+    local b=button(r.frame,"Button"); b.Position=UDim2.fromOffset(0,4); b.Size=UDim2.new(1,0,1,-8); b.BackgroundTransparency=0; b.BackgroundColor3=primary and C.selected or C.hover; border(b,primary and .25 or .7); hover(b)
+    if iconName~=false then local ico=icon(b,iconName or "zap",18,primary and C.blue or C.muted); ico.Position=UDim2.fromOffset(14,10) end
+    local captionLabel=text(b,"Label",caption,16,primary and C.blue or C.text,true)
+    captionLabel.TextWrapped=true
+    captionLabel.Position=UDim2.fromOffset(iconName==false and 12 or 43,0); captionLabel.Size=UDim2.new(1,iconName==false and -24 or -55,1,0)
+    captionLabel.TextXAlignment=iconName==false and Enum.TextXAlignment.Center or Enum.TextXAlignment.Left
+    b.Activated:Connect(function()
+        if r.Callback then
+            local ok,err=pcall(r.Callback)
+            if not ok then warn("[LimboUI Callback] "..tostring(err)) end
+        else feedback(caption.." - UI preview") end
+    end); return r
+end
+local function action(c,name,caption,iconName,primary)
+    return actionButton(row(c,"action",name,caption),caption,iconName,primary)
+end
+local sliders={}
+local bindSlider
+local function slider(c,name,caption,default,maxValue,minValue)
+    minValue=minValue or 0
+    assert(maxValue>minValue,"Slider Max must be greater than Min")
+    local r=row(c,"slider",name,caption)
+    r.label=text(r.frame,"Label",caption,13,C.muted); r.label.TextWrapped=true; r.label.Position=UDim2.fromOffset(0,8); r.label.Size=UDim2.new(1,-73,0,36)
+    local input=make("TextBox",{Name="Value",Text=tostring(default),ClearTextOnFocus=false,FontFace=FONT_BODY,TextColor3=C.text,TextSize=15,BackgroundColor3=C.field,BorderSizePixel=0,Position=UDim2.new(1,-60,0,8),Size=UDim2.fromOffset(60,36)},r.frame); corner(input,9); border(input,.6)
+    local hit=button(r.frame,"Slider"); hit.Position=UDim2.fromOffset(0,42); hit.Size=UDim2.new(1,0,0,44)
+    local rail=box(hit,"Rail",C.off); rail.Position=UDim2.new(0,8,.5,-2); rail.Size=UDim2.new(1,-16,0,4); corner(rail,3)
+    local fill=box(rail,"Fill",C.blue); fill.Size=UDim2.fromOffset(0,4); corner(fill,3)
+    local knob=box(rail,"Knob",C.text); knob.Size=UDim2.fromOffset(12,12); knob.AnchorPoint=Vector2.new(.5,.5); knob.Position=UDim2.fromScale(0,.5); corner(knob,6)
+    local function set(value)
+        assert(type(value)=="number","Slider value must be a number")
+        if value~=value then value=minValue end
+        value=math.clamp(value,minValue,maxValue)
+        value=(minValue%1~=0 or maxValue%1~=0) and math.floor(value*100+.5)/100 or math.floor(value)
+        input.Text=tostring(value); gui:SetAttribute(name,value)
+        local fraction=(value-minValue)/(maxValue-minValue)
+        fill.Size=UDim2.new(fraction,0,0,4); knob.Position=UDim2.fromScale(fraction,.5)
+    end
+    r.Set=set
+    r.min=minValue; r.max=maxValue
+    set(initial(name,default)); input.FocusLost:Connect(function() set(tonumber(input.Text) or minValue) end)
+    table.insert(sliders,{hit=hit,rail=rail,set=set,max=maxValue,min=minValue}); bindSlider(sliders[#sliders]); return r
+end
+local function note(c,name,caption,detail,cfg)
+    local r=row(c,cfg and cfg.Image and "banner" or "note",name,caption)
+    if r.kind=="banner" then
+        local backdrop=box(r.frame,"LogoBackdrop",C.selected); corner(backdrop,24); border(backdrop,.5)
+        make("UIGradient",{Color=ColorSequence.new(Color3.fromRGB(200,222,255),Color3.fromRGB(90,117,163)),Rotation=45},backdrop)
+        r.image=make("ImageLabel",{Name="Logo",Image=cfg.Image,BackgroundTransparency=1,ScaleType=Enum.ScaleType.Fit,Position=UDim2.fromOffset(12,12),Size=UDim2.new(1,-24,1,-24)},backdrop)
+        r.backdrop=backdrop
+        r.badge=text(r.frame,"Badge",cfg.Badge or BRAND_NAME,13,C.blue,true)
+        r.label=text(r.frame,"Label",caption,30,C.text,true); r.label.TextWrapped=true; r.label.TextYAlignment=Enum.TextYAlignment.Top
+        r.detail=text(r.frame,"Detail",detail,17,C.muted); r.detail.TextWrapped=true; r.detail.TextYAlignment=Enum.TextYAlignment.Top
+        r.tags={}
+        for _,caption in ipairs(cfg.Tags or {}) do
+            local chip=box(r.frame,"Benefit"..(#r.tags+1),C.field); corner(chip,8); border(chip,.7)
+            local dot=box(chip,"Dot",C.blue); corner(dot,3); place(dot,12,13,5,5)
+            local label=text(chip,"Label",caption,14,C.muted,true); label.Position=UDim2.fromOffset(25,0); label.Size=UDim2.new(1,-33,1,0)
+            table.insert(r.tags,chip)
+        end
+        return r
+    end
+    r.panel=box(r.frame,"Panel",C.field); r.panel.BackgroundTransparency=.15; corner(r.panel,10); border(r.panel,.75)
+    local glyph=icon(r.panel,"info",18,C.blue); glyph.Position=UDim2.fromOffset(12,13)
+    r.label=text(r.panel,"Label",caption,18,C.text,true); r.label.Visible=caption~=""; r.label.TextWrapped=true; r.label.TextYAlignment=Enum.TextYAlignment.Top
+    r.detail=text(r.panel,"Detail",detail,15,C.muted); r.detail.TextWrapped=true; r.detail.TextYAlignment=Enum.TextYAlignment.Top; return r
+end
+
+local function navigate(name)
+    closeDropdown(); activePage=name; activeMode=modeStates[name] or modeStates[MODE_TAB]
+    gui:SetAttribute("ActivePage",name); search.Text=""; content.CanvasPosition=Vector2.zero; layout()
+end
+local function addTabButton(item)
+    local i=#navItems
+    local b=button(nav,item[1]); b.BackgroundColor3=C.selected; hover(b)
+    local selection=border(b,1); selection.Color=C.blue
+    local ico=icon(b,item[2],21,C.muted)
+    local caption=text(b,"Label",item[1],16,C.muted,true)
+    local indicator=box(b,"Indicator",C.blue); corner(indicator,2)
+    navButtons[item[1]]={button=b,icon=ico,label=caption,indicator=indicator,outline=selection,index=i}
+    b.Activated:Connect(function() navigate(item[1]) end)
+end
+local function mode(value)
+    if not table.find(MODE_GROUPS[activePage] or {},value) then return end
+    closeDropdown(); activeMode=value; modeStates[activePage]=value
+    gui:SetAttribute("Mode_"..activePage,value); gui:SetAttribute("Mode",value)
+    search.Text=""; content.CanvasPosition=Vector2.zero; layout()
+end
+for name,b in pairs(modeButtons) do b.Activated:Connect(function() mode(name) end) end
+local function rowHeight(r,width)
+    local function height(label,w)
+        rasterText(label,textRuns[label])
+        local font=label.FontFace.Weight==Enum.FontWeight.ExtraBold and Enum.Font.BuilderSansExtraBold or Enum.Font.BuilderSansBold
+        local bounds=Vector2.new(math.max(1,math.floor(w*scaleFactor)-2),100000)
+        return math.ceil(TextService:GetTextSize(label.Text,math.floor(label.TextSize*scaleFactor+.5),font,bounds).Y/scaleFactor)+2
+    end
+    local controlH=math.max(36,28/scaleFactor)
+    if r.kind=="games" then
+        r.tileHeight=math.max(88,64/scaleFactor)
+        return #r.entries==0 and math.max(68,height(r.frame.Message,width-8)+16) or math.ceil(#r.entries/2)*(r.tileHeight+10)
+    end
+    if r.kind=="banner" then
+        local copyWidth=width-174
+        r.badgeH=math.max(24,16/scaleFactor)
+        r.titleY=math.max(46,12+r.badgeH+10); r.titleH=math.max(78,height(r.label,copyWidth))
+        r.detailY=r.titleY+r.titleH+8; r.detailH=math.max(62,height(r.detail,copyWidth))
+        r.tagsY=r.detailY+r.detailH+14
+        return math.max(208,r.tagsY+(#r.tags>0 and math.max(32,18/scaleFactor)+10 or 0))
+    end
+    if r.kind=="toggle" then return math.max(42,height(r.label,width-math.max(40,28/scaleFactor)-24)+8,32/scaleFactor) end
+    if r.kind=="select" then
+        r.labelHeight=height(r.label,width-math.min(172,width*.48)-14)
+        return math.max(52,r.labelHeight+8,controlH+16)
+    end
+    if r.kind=="selectFull" then
+        r.labelHeight=height(r.label,width-4)
+        return math.max(74,r.labelHeight+controlH+12)
+    end
+    if r.kind=="slider" then
+        r.labelHeight=math.max(36,height(r.label,width-73),controlH)
+        return math.max(94,r.labelHeight+math.max(44,28/scaleFactor)+14)
+    end
+    if r.kind=="note" then
+        local measured=r.measurement
+        if measured and measured.width==width and measured.scale==scaleFactor
+            and measured.title==r.label.Text and measured.content==r.detail.Text then return measured.height end
+        rasterText(r.label,18); rasterText(r.detail,15)
+        local bounds=Vector2.new(math.max(1,math.floor((width-54)*scaleFactor)-2),100000)
+        local headingSize=math.max(1,math.floor(r.label.TextSize*scaleFactor+.5))
+        local detailSize=math.max(1,math.floor(r.detail.TextSize*scaleFactor+.5))
+        r.headingHeight=r.label.Text~="" and math.ceil(TextService:GetTextSize(r.label.Text,headingSize,Enum.Font.BuilderSansExtraBold,bounds).Y/scaleFactor)+2 or 0
+        r.detailHeight=r.detail.Text~="" and math.ceil(TextService:GetTextSize(r.detail.Text,detailSize,Enum.Font.BuilderSansBold,bounds).Y/scaleFactor)+2 or 0
+        local height=math.max(58,r.headingHeight+r.detailHeight+(r.headingHeight>0 and r.detailHeight>0 and 6 or 0)+36)
+        r.measurement={width=width,scale=scaleFactor,title=r.label.Text,content=r.detail.Text,height=height}
+        return height
+    end
+    if r.kind=="action" then
+        local label=r.frame.Button.Label
+        return math.max(46,height(label,width+label.Size.X.Offset)+16,32/scaleFactor)
+    end
+    if r.kind=="actions" then
+        local h=math.max(46,32/scaleFactor)
+        for _,child in ipairs(r.buttons) do h=math.max(h,height(child.Button.Label,(width-(#r.buttons-1)*8)/#r.buttons+child.Button.Label.Size.X.Offset)+16) end
+        return h
+    end
+    if r.kind=="input" then return math.max(r.multiline and 150 or 78,(r.multiline and 80 or 52)/scaleFactor) end
+    return math.max(42,32/scaleFactor)
+end
+local function arrangeRow(r,width)
+    if r.kind=="toggle" then
+        local b=r.frame.Toggle; local bar=b.Track; local knob=bar.Knob
+        local w,h=math.max(40,28/scaleFactor),math.max(24,16/scaleFactor)
+        bar.Size=UDim2.fromOffset(w,h); bar.Position=UDim2.new(1,-w-2,.5,-h/2)
+        knob.Size=UDim2.fromOffset(h-6,h-6); knob.Position=UDim2.fromOffset(b:GetAttribute("Value") and w-h+3 or 3,3)
+        b.Label.Size=UDim2.new(1,-w-24,1,0)
+    elseif r.kind=="actions" then
+        local buttonWidth=(width-(#r.buttons-1)*8)/#r.buttons
+        for i,child in ipairs(r.buttons) do place(child,(i-1)*(buttonWidth+8),0,buttonWidth,r.frame.Size.Y.Offset) end
+    elseif r.kind=="note" then
+        local y=12+r.headingHeight+(r.headingHeight>0 and r.detailHeight>0 and 6 or 0)
+        place(r.panel,0,6,width,r.frame.Size.Y.Offset-12)
+        place(r.label,40,12,width-54,r.headingHeight)
+        place(r.detail,40,y,width-54,r.detailHeight)
+    elseif r.kind=="games" then
+        local tileWidth=(width-10)/2
+        place(r.frame.Message,4,8,width-8,r.frame.Size.Y.Offset-16)
+        for i,entry in ipairs(r.entries) do
+            place(entry,(i-1)%2*(tileWidth+10),math.floor((i-1)/2)*(r.tileHeight+10)+4,tileWidth,r.tileHeight)
+            local titleH=math.max(24,16/scaleFactor); local versionH=math.max(20,16/scaleFactor)
+            place(entry.Title,64,10,tileWidth-76,titleH)
+            place(entry.Version,64,12+titleH,tileWidth-76,versionH)
+            place(entry.Status,14,r.tileHeight-math.max(18,16/scaleFactor)-8,tileWidth-28,math.max(18,16/scaleFactor))
+        end
+    elseif r.kind=="banner" then
+        local copyWidth=width-174
+        place(r.badge,4,12,copyWidth,r.badgeH)
+        place(r.label,4,r.titleY,copyWidth,r.titleH)
+        place(r.detail,4,r.detailY,copyWidth,r.detailH)
+        place(r.backdrop,width-140,46,132,132)
+        local tagWidth=math.min(174,(width-8-math.max(0,#r.tags-1)*8)/math.max(1,#r.tags))
+        for i,chip in ipairs(r.tags) do place(chip,4+(i-1)*(tagWidth+8),r.tagsY,tagWidth,math.max(32,18/scaleFactor)) end
+    elseif r.kind=="selectFull" then
+        place(r.label,2,0,width-4,r.labelHeight); place(r.control,0,r.labelHeight+4,width,math.max(36,28/scaleFactor))
+    elseif r.kind=="select" then
+        local w=math.min(172,width*.48)
+        place(r.label,2,0,width-w-14,r.frame.Size.Y.Offset); place(r.control,width-w,8,w,math.max(36,28/scaleFactor))
+    elseif r.kind=="slider" then
+        place(r.label,0,8,width-73,r.labelHeight)
+        place(r.frame.Value,width-60,8,60,math.max(36,28/scaleFactor))
+        place(r.frame.Slider,0,r.labelHeight+6,width,math.max(44,28/scaleFactor))
+    elseif r.kind=="input" then
+        local labelH=math.max(23,16/scaleFactor)
+        place(r.frame.Label,2,2,width-4,labelH)
+        place(r.frame.Input,0,labelH+7,width,r.frame.Size.Y.Offset-labelH-11)
+    elseif r.kind=="tabs" then
+        for i,b in ipairs(r.buttons) do
+            place(b,(i-1)*width/#r.buttons,0,width/#r.buttons-3,math.max(36,28/scaleFactor))
+            local on=r.card.activeTab==r.values[i]
+            b.Label.TextColor3=on and C.text or C.muted; b.BackgroundColor3=C.hover; b.BackgroundTransparency=on and .12 or 1
+        end
+    end
+end
+performLayout=function()
+    if not gui.Parent or not ready then return end
+    local view=canvas.AbsoluteSize; if view.X<1 or view.Y<1 then return end
+    overlay.AnchorPoint=canvas.AnchorPoint; overlay.Position=canvas.Position; overlay.Size=canvas.Size
+    local margin=math.min(view.X,view.Y)<700 and 8 or 20
+    logicalW,logicalH=BASE_W,BASE_H
+    screenScaleLimit=math.min(math.max(1,view.X-margin*2)/BASE_W,math.max(1,view.Y-margin*2)/BASE_H)
+    autoScaleFactor=math.min(screenScaleLimit,.92)
+    -- Fill spare space on one axis without increasing the normal desktop footprint.
+    logicalW=math.min(BASE_W*.92,math.max(1,view.X-margin*2))/autoScaleFactor
+    logicalH=math.min(BASE_H*.92,math.max(1,view.Y-margin*2))/autoScaleFactor
+    local zoom=gui:GetAttribute("UserZoom")
+    zoom=type(zoom)=="number" and zoom==zoom and math.clamp(zoom,MIN_ZOOM,10) or 1
+    scaleFactor=math.clamp(autoScaleFactor*zoom,math.min(MIN_SCALE,autoScaleFactor),1.5)
+    uiScale.Scale=scaleFactor; fontScale=scaleFactor; root.Size=UDim2.fromOffset(logicalW,logicalH)
+    panArea=getPanArea(scaleFactor)
+    canvas.CanvasSize=UDim2.fromOffset(panArea.X,panArea.Y)
+    panEnabled=panArea.X>view.X+1 or panArea.Y>view.Y+1
+    canvas.ScrollingEnabled=panEnabled
+    canvas.CanvasPosition=Vector2.new(math.clamp(canvas.CanvasPosition.X,0,math.max(0,panArea.X-view.X)),math.clamp(canvas.CanvasPosition.Y,0,math.max(0,panArea.Y-view.Y)))
+    root.Position=UDim2.fromOffset(panArea.X/2+dragOffset.X,panArea.Y/2+dragOffset.Y)
+    fitToast()
+    local sideWidth=sidebarCollapsed and 64 or 184
+    place(sidebar,0,0,sideWidth,logicalH)
+    place(brandIcon,sidebarCollapsed and 9 or 12,23,46,46); place(brand,58,25,112,24); place(version,58,49,112,18)
+    local brandH=math.max(24,14/scaleFactor)
+    place(brand,58,25,112,brandH); place(version,58,25+brandH,112,math.max(18,14/scaleFactor))
+    brand.Visible=not sidebarCollapsed; version.Visible=not sidebarCollapsed
+    place(avatar,sidebarCollapsed and 3 or 0,16,38,38); place(welcome,48,16,104,20); place(maskedName,48,34,104,20)
+    local profileH=math.max(60,36/scaleFactor)
+    place(profile,sidebarCollapsed and 10 or 18,logicalH-profileH-12,sideWidth-(sidebarCollapsed and 20 or 36),profileH)
+    place(welcome,48,8,104,math.max(20,14/scaleFactor)); place(maskedName,48,8+math.max(20,14/scaleFactor),104,math.max(20,14/scaleFactor))
+    welcome.Visible=not sidebarCollapsed; maskedName.Visible=not sidebarCollapsed
+    local navTop=math.max(103,25+brandH+math.max(18,14/scaleFactor)+12)
+    local navH=math.max(0,logicalH-profileH-navTop-24)
+    local navButtonH=math.max(44,28/scaleFactor); local navStep=navButtonH+4
+    place(nav,10,navTop,sideWidth-20,navH)
+    local navContentH=#navItems*navStep+4
+    nav.CanvasSize=UDim2.fromOffset(0,navContentH)
+    nav.CanvasPosition=Vector2.new(0,math.min(nav.CanvasPosition.Y,math.max(0,navContentH-navH)))
+    for name,item in pairs(navButtons) do
+        local b=item.button; local on=activePage==name
+        place(b,2,2+(item.index-1)*navStep,sideWidth-24,navButtonH)
+        item.icon.AnchorPoint=Vector2.new(sidebarCollapsed and .5 or 0,.5)
+        item.icon.Position=UDim2.new(sidebarCollapsed and .5 or 0,sidebarCollapsed and 0 or 12,.5,0)
+        place(item.label,44,0,sideWidth-64,navButtonH)
+        item.label.Visible=not sidebarCollapsed
+        item.indicator.Visible=on and not sidebarCollapsed; place(item.indicator,0,12,5,20)
+        item.outline.Transparency=on and .28 or 1
+        b.BackgroundTransparency=on and .12 or 1; item.label.TextColor3=on and C.text or C.muted; tint(item.icon,on and C.blue or C.muted)
+    end
+    local mainX=sideWidth+20; local mainWidth=logicalW-mainX-20
+    local headerH=math.max(76,44/scaleFactor)
+    place(header,mainX,0,mainWidth,headerH)
+    local buttonW,buttonH=math.max(36,24/scaleFactor),math.max(38,28/scaleFactor)
+    local buttonY=(headerH-buttonH)/2
+    place(sidebarToggle,0,buttonY,buttonW,buttonH)
+    sidebarCloseIcon.Position=UDim2.fromOffset((buttonW-20)/2,(buttonH-20)/2); sidebarOpenIcon.Position=sidebarCloseIcon.Position
+    sidebarCloseIcon.Visible=not sidebarCollapsed; sidebarOpenIcon.Visible=sidebarCollapsed
+    local searchW=math.min(mainWidth*.42,math.max(272,88/scaleFactor))
+    local searchX=mainWidth-buttonW-10-searchW
+    title.Text=activePage; place(title,buttonW+10,buttonY,math.max(1,searchX-buttonW-20),buttonH)
+    place(headerLine,0,headerH-4,mainWidth,1)
+    place(searchShell,searchX,buttonY,searchW,buttonH)
+    place(minimize,mainWidth-buttonW,buttonY,buttonW,buttonH); place(minus,(buttonW-20)/2,(buttonH-20)/2,20,20)
+    local visibleModes=MODE_GROUPS[activePage]
+    local modeButtonW=math.max(MODE_WIDTH,72/scaleFactor); local modeH=math.max(52,36/scaleFactor)
+    local modeBarWidth=(visibleModes and #visibleModes or 0)*(modeButtonW+2)+8
+    modes.Visible=visibleModes~=nil; place(modes,mainX,headerH,math.min(mainWidth,modeBarWidth),modeH)
+    modes.CanvasSize=UDim2.fromOffset(modeBarWidth,0)
+    local activeButton=modeButtons[activeMode]
+    for page,names in pairs(MODE_GROUPS) do
+        for i,name in ipairs(names) do
+            local b=modeButtons[name]; b.Visible=page==activePage
+            place(b,4+(i-1)*(modeButtonW+2),4,modeButtonW,modeH-8)
+            b.Label.Size=UDim2.new(1,-16,1,0)
+            local on=name==activeMode; b.Label.TextColor3=on and C.text or C.muted
+        end
+    end
+    animate(modeIndicator,{Position=activeButton.Position,Size=activeButton.Size},.16)
+    modes.CanvasPosition=Vector2.new(math.clamp(activeButton.Position.X.Offset-4,0,math.max(0,modeBarWidth-mainWidth)),0)
+    local top=headerH+(visibleModes and modeH+10 or 5)
+    local footerH=math.max(35,16/scaleFactor)
+    local contentH=logicalH-top-footerH-1
+    place(content,mainX,top,mainWidth,contentH)
+    place(footer,mainX,logicalH-footerH,mainWidth,footerH)
+    local handleUnit=math.max(1,1/scaleFactor)
+    resizeHandle.Size=UDim2.fromOffset(44*handleUnit,35*handleUnit)
+    place(resizeIcon,12*handleUnit,8*handleUnit,20*handleUnit,20*handleUnit)
+    local columns=2; local gap=12
+    local innerWidth=mainWidth-7
+    local cardWidth=(innerWidth-gap)/2
+    local heights={0,0}
+    local buildStarted=os.clock()
+    for _,c in ipairs(cards) do
+        local relevant=c.page==activePage and (c.mode==nil or c.mode==activeMode)
+        local shown={}
+        if relevant then
+            for _,r in ipairs(c.rows) do
+                local show=not r.tab or r.tab==c.activeTab
+                if show and root.Visible and not c.collapsed and r.Ensure then
+                    r.Ensure()
+                    if os.clock()-buildStarted>=0.004 then task.wait(); buildStarted=os.clock() end
+                    if not gui.Parent then return end
+                end
+                if r.frame then r.frame.Visible=show; if show then table.insert(shown,r) end end
+            end
+        end
+        local visible=relevant; c.frame.Visible=visible
+        if visible then
+            local col=c.column
+            local width=c.fullWidth and innerWidth or cardWidth
+            local caption=c.frame.Collapse.Title
+            local cardHeaderH=math.max(54,28/scaleFactor)
+            local captionH=math.max(33,14/scaleFactor)
+            c.frame.Collapse.Size=UDim2.new(1,0,0,cardHeaderH)
+            c.frame.Divider.Position=UDim2.fromOffset(18,cardHeaderH)
+            c.body.Position=UDim2.fromOffset(0,cardHeaderH+6)
+            c.arrow.Position=UDim2.new(1,-34,0,(cardHeaderH-16)/2)
+            local glyph=c.frame.Collapse:FindFirstChild("Icon")
+            if glyph then glyph.Position=UDim2.fromOffset(18,(cardHeaderH-24)/2) end
+            caption.Size=UDim2.new(caption.Size.X.Scale,caption.Size.X.Offset,0,captionH)
+            caption.Position=UDim2.new(caption.Position.X.Scale,caption.Position.X.Offset,0,(cardHeaderH-captionH)/2)
+            local y=c.fullWidth and math.max(heights[1],heights[2]) or heights[col]
+            local expanded=not c.collapsed; c.body.Visible=expanded; animate(c.arrow,{Rotation=expanded and 180 or 0},.16)
+            local rowY=0
+            if expanded then for _,r in ipairs(shown) do
+                local rowWidth=width-32; local h=rowHeight(r,rowWidth)
+                place(r.frame,16,rowY,rowWidth,h); arrangeRow(r,rowWidth); rowY+=h
+            end end
+            local h=expanded and cardHeaderH+6+rowY+12 or cardHeaderH
+            place(c.frame,c.fullWidth and 0 or (col-1)*(cardWidth+gap),y,width,h); c.body.Size=UDim2.fromOffset(width,rowY)
+            if c.fullWidth then heights[1]=y+h+gap; heights[2]=y+h+gap else heights[col]=y+h+gap end
+        end
+    end
+    local total=math.max(0,math.max(heights[1],heights[2])-gap); content.CanvasSize=UDim2.fromOffset(0,total)
+    content.CanvasPosition=Vector2.new(0,math.min(content.CanvasPosition.Y,math.max(0,total-contentH)))
+    gui:SetAttribute("ActivePage",activePage); gui:SetAttribute("Mode",activeMode)
+    if MODE_GROUPS[activePage] then
+        modeStates[activePage]=activeMode; gui:SetAttribute("Mode_"..activePage,activeMode)
+    end
+    gui:SetAttribute("Layout","Compact"); gui:SetAttribute("ColumnCount",columns); gui:SetAttribute("AutoScale",scaleFactor); gui:SetAttribute("AspectRatio",logicalW/logicalH)
+    fontScale=scaleFactor
+    if lastRasterScale~=scaleFactor then
+        for obj,designSize in pairs(textRuns) do if obj.Parent then rasterText(obj,designSize) end end
+        lastRasterScale=scaleFactor
+    end
+end
+local function openFeature(c,r)
+    if r.Ensure then r.Ensure() end
+    closeDropdown(); search:ReleaseFocus()
+    activePage=c.page
+    if c.mode then activeMode=c.mode; modeStates[c.page]=c.mode end
+    if r.tab then c.activeTab=r.tab end
+    c.collapsed=false; c.frame:SetAttribute("Collapsed",false)
+    search.Text=""; layout()
+    task.defer(function()
+        while gui.Parent and (layoutQueued or layoutRunning) do task.wait() end
+        if not gui.Parent or activePage~=c.page or not r.frame.Parent then return end
+        local targetY=c.frame.Position.Y.Offset+c.body.Position.Y.Offset+r.frame.Position.Y.Offset
+        content.CanvasPosition=Vector2.new(0,math.clamp(targetY-32,0,math.max(0,content.CanvasSize.Y.Offset-content.Size.Y.Offset)))
+        local previousHighlight=r.frame:FindFirstChild("SearchHighlight"); if previousHighlight then previousHighlight:Destroy() end
+        corner(r.frame,9)
+        local highlight=border(r.frame,0); highlight.Name="SearchHighlight"; highlight.Color=C.blue
+        task.delay(1.25,function() if highlight.Parent then highlight:Destroy() end end)
+        if not panEnabled then return end
+        local p=r.frame.AbsolutePosition-canvas.AbsolutePosition+canvas.CanvasPosition
+        local size=r.frame.AbsoluteSize; local view=canvas.AbsoluteSize; local nextPan=canvas.CanvasPosition
+        local x,y=nextPan.X,nextPan.Y
+        if size.X>view.X-24 or p.X<x+12 then x=p.X-12 elseif p.X+size.X>x+view.X-12 then x=p.X+size.X-view.X+12 end
+        if p.Y<y+12 then y=p.Y-12 elseif p.Y+size.Y>y+view.Y-72 then y=p.Y+size.Y-view.Y+72 end
+        canvas.CanvasPosition=Vector2.new(math.clamp(x,0,math.max(0,panArea.X-view.X)),math.clamp(y,0,math.max(0,panArea.Y-view.Y)))
+    end)
+end
+local featureIndex,resultPool={},{}
+local function rebuildFeatureIndex()
+    table.clear(featureIndex)
+for _,c in ipairs(cards) do
+    for _,r in ipairs(c.rows) do
+        if r.kind~="tabs" then
+            local path={c.page}
+            if c.mode and c.mode~=c.heading then table.insert(path,MODE_LABELS[c.mode] or c.mode) end
+            table.insert(path,c.heading)
+            if r.tab then table.insert(path,r.tab) end
+            local location=table.concat(path," / ")
+            local caption=r.kind=="note" and c.heading or r.caption
+            table.insert(featureIndex,{card=c,row=r,caption=caption,location=location,haystack=string.lower(caption.." "..location)})
+        end
+    end
+end
+end
+local noFeatureResults=text(featureResults,"NoResults","No results found",14,C.muted)
+noFeatureResults.TextXAlignment=Enum.TextXAlignment.Center; noFeatureResults.Visible=false
+updateFeatureSearch=function()
+    closeDropdown()
+    local query=string.match(string.lower(search.Text),"^%s*(.-)%s*$")
+    if query=="" or not root.Visible then return end
+    local words={}
+    for word in string.gmatch(query,"%S+") do table.insert(words,word) end
+    local count=0
+    local left,top,right,bottom=popupBounds()
+    local width=math.min(math.max(320,220/scaleFactor),right-left)
+    local resultH=math.max(62,42/scaleFactor); local resultStep=resultH+2
+    for _,item in ipairs(featureIndex) do
+        local matches=true
+        for _,word in ipairs(words) do if not string.find(item.haystack,word,1,true) then matches=false; break end end
+        if matches then
+            count+=1
+            local pooled=resultPool[count]
+            if not pooled then
+                local entry=button(featureResults,"Result"..count); entry.ZIndex=61; entry.BackgroundColor3=C.hover; entry.BackgroundTransparency=.55; hover(entry)
+                local marker=box(entry,"Marker",C.blue); place(marker,3,13,2,36); corner(marker,1)
+                local captionLabel=text(entry,"Title","",16,C.text,true); captionLabel.TextTruncate=Enum.TextTruncate.AtEnd
+                local pathLabel=text(entry,"Location","",13,C.muted); pathLabel.TextTruncate=Enum.TextTruncate.AtEnd
+                pooled={button=entry,title=captionLabel,path=pathLabel}
+                resultPool[count]=pooled
+                entry.Activated:Connect(function() if pooled.target then openFeature(pooled.target.card,pooled.target.row) end end)
+            end
+            pooled.target=item; pooled.button.Visible=true
+            place(pooled.button,4,4+(count-1)*resultStep,width-12,resultH)
+            local titleH=math.max(28,18/scaleFactor)
+            pooled.title.Text=item.caption; place(pooled.title,16,5,width-44,titleH)
+            pooled.path.Text=item.location; place(pooled.path,16,7+titleH,width-44,math.max(22,16/scaleFactor))
+        end
+    end
+    for i=count+1,#resultPool do resultPool[i].button.Visible=false; resultPool[i].target=nil end
+    local p=(searchShell.AbsolutePosition-root.AbsolutePosition)/scaleFactor
+    local y=p.Y+searchShell.AbsoluteSize.Y/scaleFactor+8
+    local height=math.min(math.max(1,count)*resultStep+8,math.max(328,240/scaleFactor),bottom-top)
+    place(featureResults,math.clamp(p.X,left,right-width),math.clamp(y,top,bottom-height),width,height)
+    featureResults.CanvasSize=UDim2.fromOffset(0,math.max(count,1)*resultStep+8); featureResults.CanvasPosition=Vector2.zero
+    noFeatureResults.Visible=count==0; place(noFeatureResults,12,8,width-24,math.max(48,28/scaleFactor))
+    featureResults.Visible=true; searchDismiss.Visible=true; header.ZIndex=70
+end
+local function show(value)
+    closeDropdown(); stopResize(); dragging=nil; sliding=nil; canvas.ScrollingEnabled=panEnabled; content.ScrollingEnabled=true; root.Visible=value; restore.Visible=not value; canvas.Visible=value; fitToast()
+end
+minimize.Activated:Connect(function() show(false) end)
+restore.Activated:Connect(function()
+    if restoreDrag and restoreDrag.moved or os.clock()<restoreBlockUntil then return end
+    restoreDrag=nil; show(true); layout()
+end)
+sidebarToggle.Activated:Connect(function()
+    closeDropdown(); sidebarCollapsed=not sidebarCollapsed
+    gui:SetAttribute("SidebarCollapsed",sidebarCollapsed); layout()
+end)
+search:GetPropertyChangedSignal("Text"):Connect(function() updateFeatureSearch() end)
+track(canvas:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+    closeDropdown(); stopResize(); dragging=nil; sliding=nil; content.ScrollingEnabled=true; dragOffset=Vector2.zero
+    gui:SetAttribute("WindowOffsetX",0); gui:SetAttribute("WindowOffsetY",0)
+    canvas.CanvasPosition=Vector2.zero; layout()
+end))
+track(gui:GetAttributeChangedSignal("UserZoom"):Connect(function()
+    closeDropdown(); layout()
+end))
+local function primary(input) return input.UserInputType==Enum.UserInputType.MouseButton1 or input.UserInputType==Enum.UserInputType.Touch end
+local function movedBy(input,owner)
+    return input==owner or owner.UserInputType==Enum.UserInputType.MouseButton1 and input.UserInputType==Enum.UserInputType.MouseMovement
+end
+local function endedBy(input,owner)
+    return input==owner or owner.UserInputType==Enum.UserInputType.MouseButton1 and input.UserInputType==Enum.UserInputType.MouseButton1
+end
+local function busy() return dragging or sliding or resizing end
+local function beginDrag(input)
+    if primary(input) and not busy() then
+        dragging=input; dragStart=input.Position; dragOrigin=dragOffset
+        canvas.ScrollingEnabled=false
+        closeDropdown()
+    end
+end
+drag.InputBegan:Connect(beginDrag)
+resizeHandle.InputBegan:Connect(function(input)
+    if not primary(input) or busy() then return end
+    closeDropdown(); content.ScrollingEnabled=true
+    resizing={input=input,pointer=input.Position,scale=scaleFactor,origin=root.AbsolutePosition-canvas.AbsolutePosition+canvas.CanvasPosition}
+    tint(resizeIcon,C.blue)
+end)
+bindSlider=function(s)
+    s.hit.InputBegan:Connect(function(input)
+    if primary(input) and not busy() then sliding={input=input,slider=s}; content.ScrollingEnabled=false; canvas.ScrollingEnabled=false; s.set((input.Position.X-s.rail.AbsolutePosition.X)/s.rail.AbsoluteSize.X*(s.max-s.min)+s.min) end
+    end)
+end
+track(Input.InputChanged:Connect(function(input)
+    if resizing and movedBy(input,resizing.input) then
+        local delta=input.Position-resizing.pointer
+        local nextScale=resizing.scale+(delta.X*logicalW+delta.Y*logicalH)/(logicalW*logicalW+logicalH*logicalH)
+        nextScale=math.clamp(nextScale,math.min(MIN_SCALE,autoScaleFactor),1.5)
+        dragOffset=resizing.origin+Vector2.new(logicalW*nextScale/2,logicalH*nextScale/2)-getPanArea(nextScale)/2
+        gui:SetAttribute("WindowOffsetX",dragOffset.X); gui:SetAttribute("WindowOffsetY",dragOffset.Y)
+        gui:SetAttribute("UserZoom",math.clamp(nextScale/autoScaleFactor,MIN_ZOOM,10))
+        return
+    end
+    if sliding and movedBy(input,sliding.input) then local s=sliding.slider; s.set((input.Position.X-s.rail.AbsolutePosition.X)/s.rail.AbsoluteSize.X*(s.max-s.min)+s.min) end
+    if dragging and movedBy(input,dragging) then
+        local delta=input.Position-dragStart
+        dragOffset=dragOrigin+Vector2.new(delta.X,delta.Y)
+        gui:SetAttribute("WindowOffsetX",dragOffset.X); gui:SetAttribute("WindowOffsetY",dragOffset.Y)
+        root.Position=UDim2.fromOffset(panArea.X/2+dragOffset.X,panArea.Y/2+dragOffset.Y)
+    end
+end))
+track(Input.InputEnded:Connect(function(input)
+    if resizing and endedBy(input,resizing.input) then stopResize() end
+    if dragging and endedBy(input,dragging) then dragging=nil; canvas.ScrollingEnabled=panEnabled end
+    if sliding and endedBy(input,sliding.input) then sliding=nil; content.ScrollingEnabled=true; canvas.ScrollingEnabled=panEnabled end
+end))
+track(Input.WindowFocusReleased:Connect(function() dragging=nil; sliding=nil; stopResize(); content.ScrollingEnabled=true; canvas.ScrollingEnabled=panEnabled end))
+track(Input.InputBegan:Connect(function(input,processed)
+    if not processed and not Input:GetFocusedTextBox() and input.KeyCode==Enum.KeyCode.RightShift then
+        if root.Visible then show(false)
+        else dragOffset=Vector2.zero; gui:SetAttribute("WindowOffsetX",0); gui:SetAttribute("WindowOffsetY",0); canvas.CanvasPosition=Vector2.zero; show(true); layout() end
+    end
+    if input.KeyCode==Enum.KeyCode.Escape then closeDropdown() end
+end))
+local Window={Gui=gui}
+local applyingConfig=false
+local SectionMethods={}
+local function titleOf(cfg)
+    assert(type(cfg)=="table" and type(cfg.Title)=="string" and cfg.Title~="","A nonempty Title is required")
+    return cfg.Title
+end
+local function controlName(cfg)
+    local name=cfg.Flag or cfg.Name or cfg.Title:gsub("[^%w_]","")
+    assert(type(name)=="string" and name~="" and not controls[name],"Control Flag must be unique: "..tostring(name))
+    return name
+end
+local function bindControl(section,cfg,r)
+    r.tab=section._rowTab
+    local name=r.name
+    controls[name]=r
+    r.save=cfg.Save~=false
+    local handle={Flag=name}
+    function handle:Set(value) assert(r.Set,"This control has no value"); r.Set(value) end
+    local function readValue() if r.Get then return r.Get() end; return gui:GetAttribute(name) end
+    function handle:Get() return readValue() end
+    handle.SetValue=handle.Set
+    if r.Refresh then function handle:Refresh(values) r.Refresh(values) end end
+    setmetatable(handle,{__index=function(_,key)
+        if key=="Value" then return readValue() end
+        if key=="Instance" then if r.Ensure then r.Ensure() end; return r.frame end
+    end})
+    if cfg.Callback and r.kind~="action" then
+        assert(type(cfg.Callback)=="function","Callback must be a function")
+        r.Invoke=function()
+            r.LastCallbackValue=gui:GetAttribute(name)
+            return pcall(cfg.Callback,readValue())
+        end
+        track(gui:GetAttributeChangedSignal(name):Connect(function()
+            if applyingConfig or r.LastCallbackValue==gui:GetAttribute(name) then return end
+            local ok,err=r.Invoke()
+            if not ok then warn("[LimboUI Callback] "..tostring(err)) end
+        end))
+    end
+    return handle
+end
+local function defaultOf(cfg,fallback)
+    if cfg.Value~=nil then return cfg.Value end
+    if cfg.Default~=nil then return cfg.Default end
+    return fallback
+end
+function SectionMethods:Toggle(cfg)
+    local title=titleOf(cfg); local value=defaultOf(cfg,false)
+    assert(type(value)=="boolean","Toggle Value must be boolean")
+    return bindControl(self,cfg,toggle(self._card,controlName(cfg),title,value))
+end
+function SectionMethods:Dropdown(cfg)
+    local title=titleOf(cfg)
+    assert(type(cfg.Values)=="table" and (cfg.Multi or #cfg.Values>0),"Dropdown requires Values")
+    for _,value in ipairs(cfg.Values) do assert(type(value)=="string","Dropdown Values must be strings") end
+    local value=defaultOf(cfg,cfg.Multi and {} or cfg.Values[1]); assert(cfg.Multi or table.find(cfg.Values,value),"Dropdown default must be in Values")
+    return bindControl(self,cfg,dropdown(self._card,controlName(cfg),title,cfg.Values,value,cfg.FullWidth,cfg.Multi,cfg.Placeholder))
+end
+function SectionMethods:Slider(cfg)
+    local title=titleOf(cfg); local min,max=cfg.Min or 0,cfg.Max or 100
+    assert(type(min)=="number" and type(max)=="number" and max>min,"Invalid slider bounds")
+    return bindControl(self,cfg,slider(self._card,controlName(cfg),title,defaultOf(cfg,min),max,min))
+end
+function SectionMethods:Button(cfg)
+    local title=titleOf(cfg)
+    assert(cfg.Callback==nil or type(cfg.Callback)=="function","Callback must be a function")
+    local r=action(self._card,controlName(cfg),title,cfg.Icon==nil and "zap" or cfg.Icon,cfg.Primary)
+    r.Callback=cfg.Callback
+    return bindControl(self,cfg,r)
+end
+function SectionMethods:ButtonRow(cfg)
+    assert(type(cfg.Buttons)=="table" and #cfg.Buttons>0 and #cfg.Buttons<=3,"ButtonRow requires 1 to 3 buttons")
+    local titles={}; for _,item in ipairs(cfg.Buttons) do table.insert(titles,titleOf(item)); assert(type(item.Callback)=="function","Button callback is required") end
+    local r=row(self._card,"actions",cfg.Name or table.concat(titles,""),table.concat(titles," / ")); r.tab=self._rowTab; r.buttons={}
+    for i,item in ipairs(cfg.Buttons) do
+        local f=box(r.frame,"Action"..i); f.BackgroundTransparency=1
+        actionButton({frame=f,Callback=item.Callback},item.Title,false,item.Primary)
+        table.insert(r.buttons,f)
+    end
+    return {Instance=r.frame}
+end
+function SectionMethods:Input(cfg)
+    local title=titleOf(cfg); local name=controlName(cfg); local value=defaultOf(cfg,"")
+    assert(type(value)=="string","Input Value must be a string")
+    local r=row(self._card,"input",name,title); r.multiline=cfg.MultiLine==true; r.maxLength=cfg.MaxLength or 256
+    local caption=text(r.frame,"Label",title,15,C.muted); place(caption,2,2,1,23); caption.Size=UDim2.new(1,-4,0,23)
+    local input=make("TextBox",{Name="Input",Text="",PlaceholderText=cfg.Placeholder or "Enter text...",ClearTextOnFocus=false,FontFace=FONT_BODY,TextSize=15,TextColor3=C.text,PlaceholderColor3=C.faint,BackgroundColor3=C.field,BorderSizePixel=0,TextXAlignment=Enum.TextXAlignment.Left,TextYAlignment=r.multiline and Enum.TextYAlignment.Top or Enum.TextYAlignment.Center,TextWrapped=r.multiline,MultiLine=r.multiline,Position=UDim2.fromOffset(0,30),Size=UDim2.new(1,0,0,r.multiline and 110 or 38)},r.frame)
+    corner(input,9); border(input,.6)
+    make("UIPadding",{PaddingLeft=UDim.new(0,12),PaddingRight=UDim.new(0,12),PaddingTop=UDim.new(0,r.multiline and 8 or 0)},input)
+    r.Set=function(textValue)
+        assert(type(textValue)=="string" and #textValue<=r.maxLength,"Invalid input value")
+        input.Text=textValue; gui:SetAttribute(name,textValue)
+    end
+    r.Set(value)
+    input.FocusLost:Connect(function() r.Set(input.Text:sub(1,r.maxLength)) end)
+    return bindControl(self,cfg,r)
+end
+function SectionMethods:Paragraph(cfg)
+    assert(type(cfg)=="table" and type(cfg.Title)=="string" and (cfg.Title~="" or type(cfg.Content)=="string" and cfg.Content~=""),"Paragraph requires Title or Content")
+    return bindControl(self,cfg,note(self._card,controlName(cfg),cfg.Title,cfg.Content or "",cfg))
+end
+function SectionMethods:GameList(cfg)
+    local r=row(self._card,"games",controlName(cfg),titleOf(cfg))
+    r.entries={}; r.values={}
+    local message=text(r.frame,"Message",cfg.Message or "Loading supported games...",16,C.muted)
+    place(message,4,8,1,52); message.Size=UDim2.new(1,-8,0,52); message.TextWrapped=true
+    local colors={Working=Color3.fromRGB(111,220,170),Patched=Color3.fromRGB(246,193,111),Discontinue=Color3.fromRGB(243,135,145)}
+    local iconAssets,iconJob,iconGeneration={},nil,0
+    local function assetId(value)
+        if type(value)=="number" and value>0 and value<=9007199254740991 and value%1==0 then value=string.format("%.0f",value) end
+        return type(value)=="string" and #value<=20 and value:match("^%d+$") and value:find("[1-9]") and value or nil
+    end
+    local function stopIcons()
+        iconGeneration=iconGeneration+1
+        if iconJob and iconJob~=coroutine.running() then pcall(task.cancel,iconJob) end
+        iconJob=nil
+    end
+    r.frame.Destroying:Connect(stopIcons)
+    r.Set=function(payload)
+        assert(type(payload)=="table","GameList requires a table")
+        local games=payload.Games or {}
+        assert(type(games)=="table" and #games<=100,"Invalid games list")
+        local currentPlaces={}
+        for _,game in ipairs(games) do
+            assert(type(game)=="table" and type(game.title)=="string" and #game.title>0 and #game.title<=120 and type(game.version)=="string" and #game.version<=64 and colors[game.status],"Invalid game display data")
+            local id=assetId(game.placeId); if id then currentPlaces[id]=true end
+        end
+        stopIcons()
+        for id in pairs(iconAssets) do if not currentPlaces[id] then iconAssets[id]=nil end end
+        for _,entry in ipairs(r.entries) do entry:Destroy() end
+        r.entries={}; r.values=games
+        message.Text=payload.Message or "No supported games have been published yet."
+        message.Visible=#games==0
+        local pending={}
+        for i,game in ipairs(games) do
+            local tile=box(r.frame,"Game"..i,C.field); corner(tile,10); border(tile,.7)
+            local emblem=box(tile,"Emblem",C.selected); corner(emblem,10); place(emblem,12,12,40,40)
+            local glyph=icon(emblem,"package",22,C.blue); glyph.Position=UDim2.fromOffset(9,9)
+            local universe,placeId=assetId(game.universeId),assetId(game.placeId)
+            local image=make("ImageLabel",{Name="GameIcon",Image=iconAssets[placeId] or (universe and "rbxthumb://type=GameIcon&id="..universe.."&w=150&h=150" or ""),BackgroundTransparency=1,Size=UDim2.fromScale(1,1),ScaleType=Enum.ScaleType.Crop},emblem); corner(image,10)
+            glyph.Visible=not image.IsLoaded
+            if image.Image~="" or placeId then pending[#pending+1]={image=image,glyph=glyph,placeId=placeId} end
+            local title=text(tile,"Title",game.title,17,C.text,true); title.Position=UDim2.fromOffset(64,10); title.Size=UDim2.new(1,-76,0,24); title.TextTruncate=Enum.TextTruncate.AtEnd
+            local version=text(tile,"Version",game.version,14,C.muted); version.Position=UDim2.fromOffset(64,36); version.Size=UDim2.new(1,-76,0,20); version.TextTruncate=Enum.TextTruncate.AtEnd
+            local status=text(tile,"Status",game.status,14,colors[game.status],true); status.Position=UDim2.fromOffset(14,62); status.Size=UDim2.new(1,-28,0,18)
+            table.insert(r.entries,tile)
+        end
+        if #pending>0 then
+            local generation=iconGeneration
+            iconJob=task.defer(function()
+                local provider=game:GetService("ContentProvider")
+                local images={}
+                for _,entry in ipairs(pending) do
+                    if entry.image.Image~="" then images[#images+1]=entry.image end
+                end
+                -- Preload also resolves thumbnails outside the scrolling viewport.
+                pcall(function() provider:PreloadAsync(images) end)
+                task.wait(0.1)
+                for _,entry in ipairs(pending) do
+                    if generation~=iconGeneration or not r.frame.Parent then return end
+                    local image=entry.image
+                    entry.glyph.Visible=not image.IsLoaded
+                    local placeId=tonumber(entry.placeId)
+                    if image.Parent and not image.IsLoaded and placeId and placeId<=9007199254740991 then
+                        local ok,info=pcall(function() return game:GetService("MarketplaceService"):GetProductInfoAsync(placeId,Enum.InfoType.Asset) end)
+                        if generation~=iconGeneration or not image.Parent then return end
+                        local id=ok and type(info)=="table" and assetId(info.IconImageAssetId)
+                        if id then
+                            if not image.IsLoaded then
+                                image.Image="rbxassetid://"..id
+                                pcall(function() provider:PreloadAsync({image}) end)
+                                task.wait(0.1)
+                                if generation~=iconGeneration or not image.Parent then return end
+                                entry.glyph.Visible=not image.IsLoaded
+                                if image.IsLoaded then iconAssets[entry.placeId]=image.Image end
+                            end
+                        end
+                    end
+                end
+                iconJob=nil
+            end)
+        end
+        layout()
+    end
+    local handle=bindControl(self,cfg,r)
+    function handle:Get() return r.values end
+    return handle
+end
+function SectionMethods:Tabs(cfg)
+    assert(type(cfg.Values)=="table" and #cfg.Values>0,"Section tabs require Values")
+    local c=self._card
+    local r=row(c,"tabs",cfg.Name or "Tabs",table.concat(cfg.Values," "))
+    c.activeTab=cfg.Value or cfg.Values[1]; r.buttons={}; r.values=cfg.Values
+    for i,name in ipairs(cfg.Values) do
+        local b=button(r.frame,name:gsub("%s+","")); hover(b)
+        local caption=text(b,"Label",name,14,C.muted,true); caption.Size=UDim2.fromScale(1,1); caption.TextXAlignment=Enum.TextXAlignment.Center
+        r.buttons[i]=b
+        b.Activated:Connect(function() closeDropdown(); c.activeTab=name; layout() end)
+    end
+    local group={}
+    function group:Tab(name)
+        assert(table.find(cfg.Values,name),"Unknown section tab")
+        return setmetatable({_card=c,_rowTab=name},{__index=SectionMethods})
+    end
+    return group
+end
+-- Register values immediately; build the visual control only when its section is displayed.
+local function deferControl(section,cfg,kind,factory)
+    local title=titleOf(cfg)
+    assert(cfg.Callback==nil or type(cfg.Callback)=="function","Callback must be a function")
+    local name=controlName(cfg)
+    cfg=table.clone(cfg)
+    local c=section._card
+    local r={kind=kind,name=name,caption=title,card=c,tab=section._rowTab,multi=cfg.Multi==true,
+        min=cfg.Min or 0,max=cfg.Max or 100,maxLength=cfg.MaxLength or 256,options=cfg.Values}
+    local Http=r.multi and game:GetService("HttpService")
+    local function normalize(value,prune)
+        if kind=="toggle" then assert(type(value)=="boolean","Toggle Value must be boolean"); return value end
+        if kind=="slider" then
+            assert(type(value)=="number" and value==value and math.abs(value)<math.huge,"Invalid slider value")
+            local bounded=math.clamp(value,r.min,r.max)
+            return (r.min%1~=0 or r.max%1~=0) and math.floor(bounded*100+.5)/100 or math.floor(bounded)
+        end
+        if kind=="input" then assert(type(value)=="string" and #value<=r.maxLength,"Invalid input value"); return value end
+        if r.multi then
+            if type(value)=="string" then value=Http:JSONDecode(value) end
+            assert(type(value)=="table","Dropdown selections must be a table")
+            local selected,seen={},{}
+            for key,option in pairs(value) do
+                assert(type(key)=="number" and key>=1 and key%1==0 and key<=#value and type(option)=="string","Invalid dropdown selections")
+                assert(prune or table.find(r.options,option),"Dropdown value is not in Values")
+            end
+            for _,option in ipairs(value) do
+                if table.find(r.options,option) and not seen[option] then table.insert(selected,option); seen[option]=true end
+            end
+            return Http:JSONEncode(selected)
+        end
+        assert(table.find(r.options,value),"Dropdown value is not in Values"); return value
+    end
+    if kind=="select" then
+        assert(type(r.options)=="table" and (r.multi or #r.options>0),"Dropdown requires Values")
+        for _,option in ipairs(r.options) do assert(type(option)=="string","Dropdown Values must be strings") end
+        if cfg.FullWidth then r.kind="selectFull" end
+    elseif kind=="slider" then assert(type(r.min)=="number" and type(r.max)=="number" and r.max>r.min,"Invalid slider bounds") end
+    if kind~="action" then
+        local fallback=kind=="toggle" and false or kind=="slider" and r.min or kind=="input" and "" or r.multi and {} or r.options and r.options[1]
+        -- Boolean false must remain a valid default.
+        if kind=="toggle" then fallback=false end
+        local value=normalize(defaultOf(cfg,fallback),false)
+        if saved[name]~=nil then local ok,restored=pcall(normalize,saved[name],true); if ok then value=restored end end
+        gui:SetAttribute(name,value)
+        r.Set=function(nextValue) gui:SetAttribute(name,normalize(nextValue,false)) end
+        if r.multi then
+            r.Get=function() return Http:JSONDecode(gui:GetAttribute(name)) end
+            r.Validate=function(value) return pcall(normalize,value,false) end
+        end
+    end
+    if kind=="select" then
+        r.Refresh=function(values)
+            assert(type(values)=="table","Dropdown values must be a table")
+            for _,option in ipairs(values) do assert(type(option)=="string","Dropdown Values must be strings") end
+            r.options=(r.multi or #values>0) and table.clone(values) or {"None"}
+            cfg.Values=r.options
+            if r.multi then gui:SetAttribute(name,normalize(gui:GetAttribute(name),true))
+            elseif not table.find(r.options,gui:GetAttribute(name)) then r.Set(r.options[1]) end
+        end
+    end
+    table.insert(c.rows,r)
+    r.Ensure=function()
+        local nativeConfig=table.clone(cfg)
+        if kind~="action" then
+            nativeConfig.Callback=nil
+            nativeConfig.Value=r.Get and r.Get() or gui:GetAttribute(name)
+            saved[name]=gui:GetAttribute(name)
+        end
+        controls[name]=nil
+        local ok,native=pcall(factory,section,nativeConfig)
+        if not ok then controls[name]=r; error(native,0) end
+        local actual=controls[name]
+        local index=table.find(c.rows,actual)
+        if index then table.remove(c.rows,index) end
+        for key,value in pairs(actual) do r[key]=value end
+        if actual.Refresh then
+            r.Refresh=function(values) actual.Refresh(values); r.options=actual.options end
+        end
+        controls[name]=r
+        r.Ensure=nil
+    end
+    return bindControl(section,cfg,r)
+end
+for name,kind in pairs({Toggle="toggle",Dropdown="select",Slider="slider",Input="input",Button="action"}) do
+    local factory=SectionMethods[name]
+    SectionMethods[name]=function(section,cfg) return deferControl(section,cfg,kind,factory) end
+end
+function Window:Tab(cfg)
+    local name=titleOf(cfg)
+    assert(not pageNames[name],"Duplicate tab: "..name)
+    assert(LUCIDE[cfg.Icon or "egg"],"Unknown Lucide tab icon")
+    pageNames[name]=true; table.insert(navItems,{name,cfg.Icon or "egg"}); addTabButton(navItems[#navItems])
+    local tab={Title=name}
+    function tab:Section(sectionConfig)
+        local heading=titleOf(sectionConfig)
+        local mode=sectionConfig.Mode
+        assert(mode==nil or table.find(MODE_GROUPS[tab.Title] or {},mode),"Section Mode must match a configured subtab name for this tab")
+        local column=sectionConfig.Column or 1; assert(column==1 or column==2,"Column must be 1 or 2")
+        local iconName=sectionConfig.Icon==nil and "workflow" or sectionConfig.Icon; assert(iconName==false or LUCIDE[iconName],"Unknown section icon")
+        local name=sectionConfig.Name or heading:gsub("[^%w_]","").."Card"
+        assert(not content:FindFirstChild(name),"Duplicate section name: "..name)
+        local c=card(tab.Title,mode,name,heading,"",iconName,column)
+        c.fullWidth=sectionConfig.FullWidth==true
+        c.collapsed=sectionConfig.Opened==false
+        return setmetatable({_card=c,Instance=c.frame},{__index=SectionMethods})
+    end
+    return tab
+end
+function Window:GetValue(flag) local r=controls[flag]; if r and r.Get then return r.Get() end; return gui:GetAttribute(flag) end
+local configPanel
+function Window:ConfigPanel(tab,options)
+    assert(not configPanel,"ConfigPanel already exists")
+    options=options or {}
+    local folder=options.Folder or ("LimboHUB/Configs/"..string.format("%.0f",game.PlaceId))
+    assert(type(folder)=="string" and folder:match("^[%w_/-]+$") and not folder:find("//",1,true) and folder:sub(1,1)~="/","Invalid config folder")
+    local Http=game:GetService("HttpService")
+    local current,autoload="None","None"
+    local section=tab:Section({Title="Config Manager",Name="ConfigManagerCard",Icon=false,Column=options.Split and 1 or 2,Mode=options.Mode})
+    local profiles,externalSection
+    if options.Split then
+        profiles=section
+        externalSection=tab:Section({Title="Import / Export",Name="ConfigTransferCard",Icon=false,Column=2,Mode=options.Mode})
+    else
+        local tabs=section:Tabs({Name="ConfigTabs",Values={"Profiles","Import / Export"},Value="Profiles"})
+        profiles,externalSection=tabs:Tab("Profiles"),tabs:Tab("Import / Export")
+    end
+    local status=profiles:Paragraph({Title="Profiles",Flag="ConfigStatus",Content="Current: None | Autoload: None",Save=false})
+    local name=profiles:Input({Title="Config Name",Flag="ConfigName",Placeholder="My config",MaxLength=48,Save=false})
+    local selection=profiles:Dropdown({Title="Saved Configs",Flag="SelectedConfig",Values={"None"},Value="None",Save=false,Callback=function(value) if value~="None" then name:Set(value) end end})
+    local external=externalSection:Input({Title="Config JSON",Flag="ConfigJSON",MultiLine=true,MaxLength=65536,Placeholder="Paste exported config JSON here...",Save=false})
+    local function notice(message) feedback(message) end
+    local function updateStatus()
+        status.Instance.Panel.Detail.Text="Current: "..current.." | Autoload: "..autoload
+        layout()
+    end
+    local function validName(value)
+        assert(type(value)=="string" and #value>=1 and #value<=48 and value:match("^[%w_-]+$") and value~="None","Use 1-48 letters, numbers, underscores or hyphens for a config name.")
+        return value
+    end
+    local function file(nameValue) return folder.."/"..validName(nameValue)..".json" end
+    local function ensureFolder()
+        assert(type(makefolder)=="function","File storage is unavailable in this executor.")
+        local path=""
+        for part in folder:gmatch("[^/]+") do path=path=="" and part or path.."/"..part; pcall(makefolder,path) end
+    end
+    local function refresh()
+        local names={}
+        if type(listfiles)=="function" then
+            local ok,files=pcall(listfiles,folder)
+            if ok and type(files)=="table" then
+                for _,path in ipairs(files) do
+                    local value=type(path)=="string" and path:gsub("\\","/"):match("/([%w_-]+)%.json$")
+                    if value and value~="None" and #value<=48 then table.insert(names,value) end
+                end
+            end
+        end
+        table.sort(names); selection:Refresh(names)
+        return names
+    end
+    local function collect()
+        local values={}
+        for flag,r in pairs(controls) do if r.save and (r.kind=="toggle" or r.kind=="select" or r.kind=="selectFull" or r.kind=="slider" or r.kind=="input") then values[flag]=gui:GetAttribute(flag) end end
+        return {Version=1,Values=values}
+    end
+    local function apply(data)
+        assert(type(data)=="table" and data.Version==1 and type(data.Values)=="table","Invalid config format.")
+        local changes={}
+        for flag,value in pairs(data.Values) do
+            local r=controls[flag]
+            if r and r.save and r.Set then
+                local valid=r.kind=="toggle" and type(value)=="boolean"
+                    or (r.kind=="select" or r.kind=="selectFull") and (r.multi and r.Validate(value) or not r.multi and table.find(r.options,value)~=nil)
+                    or r.kind=="slider" and type(value)=="number" and value==value and math.abs(value)<math.huge and value>=r.min and value<=r.max
+                    or r.kind=="input" and type(value)=="string" and #value<=r.maxLength
+                assert(valid,"Invalid value for "..tostring(flag))
+                table.insert(changes,{r,value})
+            end
+        end
+        assert(#changes>0,"No compatible controls were found in this config.")
+        table.sort(changes,function(a,b) return a[1].name<b[1].name end)
+        local function assign(r,value)
+            r.Set(value)
+            if r.Invoke then
+                local ok,err=r.Invoke()
+                assert(ok,"Could not apply "..r.name..": "..tostring(err))
+            end
+        end
+        assert(not applyingConfig,"A config is already loading.")
+        applyingConfig=true
+        local ok,err=pcall(function()
+            -- Stop workers before changing filters, including toggles that already match the profile.
+            for _,change in ipairs(changes) do
+                local r=change[1]
+                if r.kind=="toggle" then assign(r,false) end
+            end
+            -- Install every input before callbacks read other controls.
+            for _,change in ipairs(changes) do
+                if change[1].kind~="toggle" then change[1].Set(change[2]) end
+            end
+            for _,change in ipairs(changes) do
+                local r=change[1]
+                if r.kind~="toggle" and r.Invoke then
+                    local applied,message=r.Invoke()
+                    assert(applied,"Could not apply "..r.name..": "..tostring(message))
+                end
+            end
+            for _,change in ipairs(changes) do
+                if change[1].kind=="toggle" and change[2] then assign(change[1],true) end
+            end
+        end)
+        applyingConfig=false
+        assert(ok,err)
+        for _,change in ipairs(changes) do
+            if change[1].kind=="toggle" then
+                assert(gui:GetAttribute(change[1].name)==change[2],"Feature could not restore its saved state: "..change[1].name)
+            end
+        end
+        return #changes
+    end
+    local function decode(raw)
+        assert(type(raw)=="string" and #raw>0 and #raw<=65536,"Config JSON is empty or too large.")
+        return Http:JSONDecode(raw)
+    end
+    local function guarded(fn)
+        return function(...)
+            local ok,result=pcall(fn,...)
+            if not ok then notice(tostring(result):gsub("^.-:%d+: ","")) end
+            return ok,result
+        end
+    end
+    local function target() local value=name:Get(); if value=="" then value=selection:Get() end; return validName(value) end
+    local save=guarded(function(value)
+        value=validName(value or target()); ensureFolder(); assert(type(writefile)=="function","File storage is unavailable.")
+        writefile(file(value),Http:JSONEncode(collect())); current=value; refresh(); selection:Set(value); updateStatus(); notice("Config saved: "..value)
+    end)
+    local load=guarded(function(value)
+        value=validName(value or target()); assert(type(readfile)=="function","File storage is unavailable.")
+        apply(decode(readfile(file(value)))); current=value; updateStatus(); notice("Config loaded: "..value)
+    end)
+    local delete=guarded(function(value)
+        value=validName(value or target()); assert(type(delfile)=="function","File deletion is unavailable.")
+        delfile(file(value)); if current==value then current="None" end
+        if autoload==value then assert(type(writefile)=="function","File storage is unavailable."); writefile(folder.."/Autoload.txt",""); autoload="None" end
+        name:Set(""); refresh(); updateStatus(); notice("Config deleted: "..value)
+    end)
+    local setAutoload=guarded(function()
+        local value=target(); assert(type(readfile)=="function" and type(writefile)=="function","File storage is unavailable.")
+        decode(readfile(file(value))); ensureFolder(); writefile(folder.."/Autoload.txt",value); autoload=value; updateStatus(); notice("Autoload set: "..value)
+    end)
+    local clearAutoload=guarded(function()
+        ensureFolder(); assert(type(writefile)=="function","File storage is unavailable."); writefile(folder.."/Autoload.txt",""); autoload="None"; updateStatus(); notice("Autoload cleared.")
+    end)
+    profiles:ButtonRow({Name="ConfigSaveLoad",Buttons={{Title="Save Config",Primary=true,Callback=function() save() end},{Title="Load Config",Callback=function() load() end}}})
+    profiles:ButtonRow({Name="ConfigDeleteRefresh",Buttons={{Title="Delete Config",Callback=function() delete() end},{Title="Refresh List",Callback=function() refresh(); notice("Config list refreshed.") end}}})
+    profiles:ButtonRow({Name="ConfigAutoload",Buttons={{Title="Set Autoload",Callback=setAutoload},{Title="Clear Autoload",Callback=clearAutoload}}})
+    externalSection:ButtonRow({Name="ConfigTransfer",Buttons={
+        {Title="Export Config",Callback=guarded(function()
+            local raw=Http:JSONEncode(collect()); local copy=setclipboard or toclipboard
+            if type(copy)=="function" and pcall(copy,raw) then notice("Config copied to clipboard.") else external:Set(raw); notice("Config JSON placed in the input.") end
+        end)},
+        {Title="Import Config",Callback=guarded(function() apply(decode(external:Get())); notice("Config imported.") end)},
+    }})
+    configPanel={Name=name,Selection=selection,External=external,Save=save,Load=load,Delete=delete,Refresh=refresh,SetAutoload=setAutoload,ClearAutoload=clearAutoload}
+    function configPanel:Autoload()
+        if self.tried then return end; self.tried=true
+        if type(readfile)~="function" then return end
+        local ok,value=pcall(readfile,folder.."/Autoload.txt")
+        if ok and type(value)=="string" and value~="" then
+            local valid=pcall(validName,value)
+            if valid then autoload=value; updateStatus(); load(value) end
+        end
+    end
+    function Window:SaveConfig(value) return save(value) end
+    function Window:LoadConfig(value) return load(value) end
+    function Window:DeleteConfig(value) return delete(value) end
+    function Window:GetConfigs() return refresh() end
+    refresh()
+    return configPanel
+end
+function Window:Announce(cfg)
+    assert(type(cfg)=="table" and type(cfg.Name)=="string" and #cfg.Name>0 and #cfg.Name<=128
+        and type(cfg.Message)=="string" and #cfg.Message>0 and #cfg.Message<=1200,"Invalid announcement")
+    if not gui.Parent then return false end
+    if not self._announcementFeed then
+        self._announcementFeed=make("Frame",{Name="Announcements",BackgroundTransparency=1,AnchorPoint=Vector2.new(.5,0),Position=UDim2.new(.5,0,0,52),Size=UDim2.new(1,-24,0,0),AutomaticSize=Enum.AutomaticSize.Y,ZIndex=250},overlay)
+        make("UIListLayout",{Padding=UDim.new(0,6),SortOrder=Enum.SortOrder.LayoutOrder,HorizontalAlignment=Enum.HorizontalAlignment.Center},self._announcementFeed)
+        self._announcementItems={}
+        track(overlay:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+            for _,item in ipairs(self._announcementItems) do item.fit() end
+        end))
+    end
+    local items=self._announcementItems
+    for _,item in ipairs(items) do if cfg.Id and item.id==cfg.Id then return true end end
+    while #items>=3 do table.remove(items,1).frame:Destroy() end
+    local frame=make("Frame",{Name="Announcement",BackgroundTransparency=1,Size=UDim2.new(1,0,0,0),AutomaticSize=Enum.AutomaticSize.Y,ZIndex=250},self._announcementFeed)
+    local row=make("Frame",{Name="Line",BackgroundTransparency=1,AnchorPoint=Vector2.new(.5,0),Position=UDim2.fromScale(.5,0),Size=UDim2.fromOffset(0,0),AutomaticSize=Enum.AutomaticSize.Y,ZIndex=250},frame)
+    make("UIListLayout",{FillDirection=Enum.FillDirection.Horizontal,VerticalAlignment=Enum.VerticalAlignment.Center,Padding=UDim.new(0,7),SortOrder=Enum.SortOrder.LayoutOrder},row)
+    local sender=make("TextLabel",{Name="Sender",Text=cfg.Name,RichText=false,BackgroundTransparency=1,TextColor3=Color3.fromRGB(52,165,255),TextStrokeColor3=Color3.new(0,0,0),TextStrokeTransparency=0,FontFace=FONT_STRONG,TextTruncate=Enum.TextTruncate.AtEnd,TextXAlignment=Enum.TextXAlignment.Right,LayoutOrder=1,ZIndex=251},row)
+    local badge=make("Frame",{Name="VerifiedBadge",BackgroundColor3=Color3.fromRGB(40,150,255),BorderSizePixel=0,LayoutOrder=2,ZIndex=251},row)
+    corner(badge,3)
+    make("TextLabel",{Name="Check",Text="✓",BackgroundTransparency=1,Size=UDim2.fromScale(1,1),TextColor3=Color3.new(1,1,1),FontFace=FONT_STRONG,TextSize=18,ZIndex=252},badge)
+    local message=make("TextLabel",{Name="Message",Text=cfg.Message,RichText=false,BackgroundTransparency=1,TextColor3=Color3.new(1,1,1),TextStrokeColor3=Color3.new(0,0,0),TextStrokeTransparency=0,FontFace=FONT_STRONG,TextWrapped=true,AutomaticSize=Enum.AutomaticSize.Y,TextXAlignment=Enum.TextXAlignment.Left,LayoutOrder=3,ZIndex=251},row)
+    local item={id=cfg.Id,frame=frame}
+    item.fit=function()
+        local available=math.max(160,overlay.AbsoluteSize.X-32)
+        local size=available<500 and 18 or 25
+        local nameWidth=math.min(TextService:GetTextSize(cfg.Name,size,Enum.Font.BuilderSansBold,Vector2.new(10000,1000)).X+2,available*.35)
+        local badgeSize=size*.8
+        local textWidth=math.max(70,math.min(TextService:GetTextSize(cfg.Message,size,Enum.Font.BuilderSansBold,Vector2.new(10000,1000)).X+3,available-nameWidth-badgeSize-14))
+        sender.TextSize=size; sender.Size=UDim2.fromOffset(nameWidth,size+8)
+        badge.Size=UDim2.fromOffset(badgeSize,badgeSize); badge.Check.TextSize=math.floor(size*.8)
+        message.TextSize=size; message.Size=UDim2.fromOffset(textWidth,0)
+        row.Size=UDim2.fromOffset(nameWidth+badgeSize+textWidth+14,0)
+    end
+    table.insert(items,item); item.fit()
+    task.delay(8,function()
+        local index=table.find(items,item)
+        if index then table.remove(items,index) end
+        if frame.Parent then frame:Destroy() end
+    end)
+    return true
+end
+
+function Window:Notify(cfg)
+    assert(type(cfg)=="table" and type(cfg.Content)=="string","Notify requires Content")
+    feedback(cfg.Content,type(cfg.Duration)=="number" and math.clamp(cfg.Duration,.1,60) or 3)
+end
+function Window:Show()
+    assert(gui.Parent,"Window has been destroyed")
+    assert(#navItems>0,"Create at least one tab before Show")
+    if not pageNames[activePage] then activePage=navItems[1][1] end
+    rebuildFeatureIndex(); ready=true; show(true); layout()
+    if configPanel then configPanel:Autoload() end
+    return self
+end
+function Window:Hide() show(false) end
+function Window:Destroy() gui:Destroy() end
+Window.CreateTab=Window.Tab
+Window.AddTab=Window.Tab
+currentWindow=Window
+gui.Destroying:Connect(function()
+    for _,c in ipairs(connections) do c:Disconnect() end
+    if fpsWorker then pcall(task.cancel,fpsWorker); fpsWorker=nil end
+end)
+root.Visible=false; canvas.Visible=false
+
+return Window
+end
+function Limbo:Notify(config)
+    assert(currentWindow and currentWindow.Gui.Parent,"Create a window before Notify")
+    currentWindow:Notify(config)
+end
+function Limbo:Destroy()
+    if currentWindow then currentWindow:Destroy(); currentWindow=nil end
+end
+return Limbo
